@@ -1,27 +1,63 @@
-// Mobile Menu Toggle
+// ==================================================
+// MODERN SAP TRAINING WEBSITE - DEV1 BRANCH
+// Interactive Features & Dark Mode Support
+// ==================================================
+
+// ==================================================
+// DARK MODE TOGGLE
+// ==================================================
+const themeToggle = document.getElementById('themeToggle');
+const html = document.documentElement;
+
+// Check for saved theme preference or default to 'light'
+const currentTheme = localStorage.getItem('theme') || 'light';
+html.setAttribute('data-theme', currentTheme);
+
+themeToggle.addEventListener('click', () => {
+    const theme = html.getAttribute('data-theme');
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+
+    html.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+});
+
+// ==================================================
+// MOBILE MENU TOGGLE
+// ==================================================
 const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
 const navMenu = document.querySelector('.nav-menu');
-const navLinks = document.querySelectorAll('.nav-menu a');
+const navLinks = document.querySelectorAll('.nav-link');
 
 mobileMenuToggle.addEventListener('click', () => {
     navMenu.classList.toggle('active');
-});
 
+    // Animate hamburger icon
+    const spans = mobileMenuToggle.querySelectorAll('span');
+    spans[0].style.transform = navMenu.classList.contains('active') ? 'rotate(45deg) translate(5px, 5px)' : '';
+    spans[1].style.opacity = navMenu.classList.contains('active') ? '0' : '1';
+    spans[2].style.transform = navMenu.classList.contains('active') ? 'rotate(-45deg) translate(7px, -7px)' : '';
+});
 
 // Close mobile menu when clicking on a link
 navLinks.forEach(link => {
     link.addEventListener('click', () => {
         navMenu.classList.remove('active');
+        const spans = mobileMenuToggle.querySelectorAll('span');
+        spans[0].style.transform = '';
+        spans[1].style.opacity = '1';
+        spans[2].style.transform = '';
     });
 });
 
-// Smooth Scrolling for Navigation Links
+// ==================================================
+// SMOOTH SCROLLING FOR NAVIGATION LINKS
+// ==================================================
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
         e.preventDefault();
         const target = document.querySelector(this.getAttribute('href'));
         if (target) {
-            const headerOffset = 70;
+            const headerOffset = 80;
             const elementPosition = target.getBoundingClientRect().top;
             const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
 
@@ -33,7 +69,27 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// Active Navigation Link on Scroll
+// ==================================================
+// HEADER SCROLL EFFECT
+// ==================================================
+const header = document.querySelector('.header');
+let lastScroll = 0;
+
+window.addEventListener('scroll', () => {
+    const currentScroll = window.pageYOffset;
+
+    if (currentScroll > 50) {
+        header.classList.add('scrolled');
+    } else {
+        header.classList.remove('scrolled');
+    }
+
+    lastScroll = currentScroll;
+});
+
+// ==================================================
+// ACTIVE NAVIGATION LINK ON SCROLL
+// ==================================================
 window.addEventListener('scroll', () => {
     let current = '';
     const sections = document.querySelectorAll('section');
@@ -41,7 +97,7 @@ window.addEventListener('scroll', () => {
     sections.forEach(section => {
         const sectionTop = section.offsetTop;
         const sectionHeight = section.clientHeight;
-        if (pageYOffset >= sectionTop - 100) {
+        if (pageYOffset >= sectionTop - 150) {
             current = section.getAttribute('id');
         }
     });
@@ -54,7 +110,9 @@ window.addEventListener('scroll', () => {
     });
 });
 
-// Contact Form Handling
+// ==================================================
+// CONTACT FORM HANDLING
+// ==================================================
 const contactForm = document.getElementById('contactForm');
 
 contactForm.addEventListener('submit', (e) => {
@@ -65,20 +123,22 @@ contactForm.addEventListener('submit', (e) => {
         email: document.getElementById('email').value,
         phone: document.getElementById('phone').value,
         course: document.getElementById('course').value,
-        message: document.getElementById('message').value
+        message: document.getElementById('message').value,
+        timestamp: new Date().toISOString()
     };
 
     console.log('Contact Form Submitted:', formData);
 
-    // Here you would typically send the data to your backend/email service
-    // For now, we'll show a success message
-    alert(`Thank you, ${formData.name}! We have received your inquiry and will contact you soon at ${formData.email} or ${formData.phone}.`);
+    // Show success message
+    showNotification(`Thank you, ${formData.name}! We'll contact you soon at ${formData.email}.`, 'success');
 
     // Reset form
     contactForm.reset();
 });
 
-// Chat Widget Functionality
+// ==================================================
+// CHAT WIDGET FUNCTIONALITY
+// ==================================================
 const chatButton = document.getElementById('chatButton');
 const chatBox = document.getElementById('chatBox');
 const closeChat = document.getElementById('closeChat');
@@ -94,6 +154,11 @@ let userInfo = null;
 // Toggle Chat Box
 chatButton.addEventListener('click', () => {
     chatBox.classList.toggle('active');
+    if (chatBox.classList.contains('active')) {
+        // Hide notification when chat is opened
+        const notification = document.querySelector('.chat-notification');
+        if (notification) notification.style.display = 'none';
+    }
 });
 
 closeChat.addEventListener('click', () => {
@@ -113,7 +178,7 @@ chatSignupForm.addEventListener('submit', (e) => {
 
     console.log('Chat User Info:', userInfo);
 
-    // Store user info (in a real app, send this to your backend)
+    // Store user info
     localStorage.setItem('chatUserInfo', JSON.stringify(userInfo));
 
     // Hide welcome screen and show chat
@@ -121,17 +186,14 @@ chatSignupForm.addEventListener('submit', (e) => {
     chatMessages.style.display = 'flex';
     chatInput.style.display = 'flex';
 
-    // Display welcome message with user's name
-    document.getElementById('userName').textContent = userInfo.name;
-
-    // Add initial bot messages
+    // Add welcome message
     setTimeout(() => {
-        addBotMessage(`Great! How can I help you today? Feel free to ask about our SAP courses, training schedules, or anything else.`);
-    }, 500);
+        addBotMessage(`Hello ${userInfo.name}! 👋 Welcome to Shashank SAP Training!`);
+    }, 300);
 
     setTimeout(() => {
-        addBotMessage(`You can ask about:\n• SAP Course Details\n• Training Schedule\n• Fees & Payment Options\n• Job Assistance\n• Free Demo Classes`);
-    }, 1500);
+        addBotMessage(`I'm here to help you with:\n• Course Information\n• Training Schedules\n• Fees & Payment Options\n• Job Assistance\n• Free Demo Classes\n\nWhat would you like to know?`);
+    }, 800);
 });
 
 // Send Message
@@ -153,17 +215,21 @@ function sendMessage() {
     // Clear input
     messageInput.value = '';
 
-    // Simulate bot response based on keywords
+    // Show typing indicator
+    const typingIndicator = addTypingIndicator();
+
+    // Simulate bot response with delay
     setTimeout(() => {
+        removeTypingIndicator(typingIndicator);
         const botResponse = generateBotResponse(message);
         addBotMessage(botResponse);
-    }, 800);
+    }, 1000 + Math.random() * 500);
 }
 
 function addUserMessage(text) {
     const messageDiv = document.createElement('div');
     messageDiv.className = 'message user-message';
-    messageDiv.innerHTML = `<p>${text}</p>`;
+    messageDiv.innerHTML = `<p>${escapeHtml(text)}</p>`;
     chatMessages.appendChild(messageDiv);
     scrollToBottom();
 }
@@ -171,13 +237,32 @@ function addUserMessage(text) {
 function addBotMessage(text) {
     const messageDiv = document.createElement('div');
     messageDiv.className = 'message bot-message';
-    messageDiv.innerHTML = `<p>${text}</p>`;
+    messageDiv.innerHTML = `<p>${escapeHtml(text).replace(/\n/g, '<br>')}</p>`;
     chatMessages.appendChild(messageDiv);
     scrollToBottom();
 }
 
+function addTypingIndicator() {
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'message bot-message typing-indicator';
+    typingDiv.innerHTML = `<p>Typing...</p>`;
+    chatMessages.appendChild(typingDiv);
+    scrollToBottom();
+    return typingDiv;
+}
+
+function removeTypingIndicator(indicator) {
+    indicator.remove();
+}
+
 function scrollToBottom() {
     chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 function generateBotResponse(userMessage) {
@@ -185,157 +270,123 @@ function generateBotResponse(userMessage) {
 
     // Course related queries
     if (message.includes('course') || message.includes('training') || message.includes('learn')) {
-        return `We offer comprehensive SAP training in various modules including:
-
-• SAP S/4 HANA
-• SAP FICO
-• SAP ABAP
-• SAP MM
-• SAP SD
-• SAP HANA
-• SAP BI/BW
-• SAP Fiori
-• SAP HCM
-
-Which course are you interested in?`;
-    }
-
-    // FICO specific
-    if (message.includes('fico') || message.includes('finance') || message.includes('accounting')) {
-        return `Our SAP FICO course covers:
-
-✓ Financial Accounting (FI)
-✓ Controlling (CO)
-✓ Asset Accounting
-✓ End-to-End Implementation
-✓ Real-time Projects
-
-Duration: 45-60 days
-Mode: Online/Classroom
-
-Would you like to know about fees or schedule a free demo?`;
+        return `We offer comprehensive SAP training in:\n\n🔹 SAP S/4 HANA\n🔹 SAP FICO\n🔹 SAP ABAP\n🔹 SAP MM\n🔹 SAP SD\n🔹 SAP Fiori\n🔹 SAP HANA\n🔹 And more!\n\nWhich course interests you?`;
     }
 
     // S/4 HANA specific
     if (message.includes('s/4') || message.includes('s4') || message.includes('hana')) {
-        return `SAP S/4 HANA is our most popular course!
+        return `SAP S/4 HANA is our most trending course! 🔥\n\n✅ Latest SAP Technology\n✅ Real-time Data Processing\n✅ Fiori UX Integration\n✅ Migration Strategies\n✅ Hands-on Projects\n\nDuration: 60 Days\n\nWould you like to know about fees or schedule a demo?`;
+    }
 
-✓ Latest SAP Technology
-✓ Fiori Applications
-✓ Migration Strategies
-✓ Hands-on Practice
-✓ Industry Projects
-
-This course is perfect for career advancement. Would you like to register for a free demo class?`;
+    // FICO specific
+    if (message.includes('fico') || message.includes('finance') || message.includes('accounting')) {
+        return `SAP FICO is perfect for finance professionals! ⭐\n\n✅ Financial Accounting (FI)\n✅ Controlling (CO)\n✅ Asset Accounting\n✅ End-to-End Implementation\n\nDuration: 45 Days\n\nInterested in enrollment or a free demo?`;
     }
 
     // Fee related queries
     if (message.includes('fee') || message.includes('cost') || message.includes('price') || message.includes('payment')) {
-        return `Our course fees are competitive and we offer flexible payment options:
-
-• Installment Plans Available
-• Early Bird Discounts
-• Group Discounts
-• Corporate Training Packages
-
-For exact pricing, please share your preferred course and I'll have our team contact you with detailed information at ${userInfo.phone}.`;
+        return `Our course fees are competitive with flexible payment options:\n\n💳 Installment Plans Available\n🎁 Early Bird Discounts\n👥 Group Discounts\n🏢 Corporate Training Packages\n\nFor exact pricing, our team will contact you at:\n📧 ${userInfo.email}\n📱 ${userInfo.phone}`;
     }
 
     // Schedule related
     if (message.includes('schedule') || message.includes('timing') || message.includes('batch') || message.includes('when')) {
-        return `We offer flexible batch timings:
-
-⏰ Weekday Batches: Mon-Fri
-⏰ Weekend Batches: Sat-Sun
-⏰ Fast Track Options Available
-
-Both morning and evening slots are available. What timing works best for you?`;
+        return `We offer flexible batch timings:\n\n⏰ Weekday Batches: Mon-Fri\n⏰ Weekend Batches: Sat-Sun\n⏰ Fast Track Available\n\nMorning and Evening slots available!\nWhat timing works best for you?`;
     }
 
     // Demo class
-    if (message.includes('demo') || message.includes('trial') || message.includes('free class')) {
-        return `Absolutely! We offer FREE demo classes for all our courses.
-
-Our team will contact you at:
-📧 ${userInfo.email}
-📱 ${userInfo.phone}
-
-You can also call us directly at +91 98765 43210 to schedule your demo class right away!`;
+    if (message.includes('demo') || message.includes('trial') || message.includes('free')) {
+        return `Great! We offer FREE demo classes! 🎉\n\nOur team will reach out to you at:\n📧 ${userInfo.email}\n📱 ${userInfo.phone}\n\nYou can also call us directly:\n☎️ +91 98765 43210`;
     }
 
     // Job assistance
     if (message.includes('job') || message.includes('placement') || message.includes('career')) {
-        return `Yes! We provide comprehensive job assistance:
-
-✓ Resume Building
-✓ Interview Preparation
-✓ Job Referrals
-✓ Mock Interviews
-✓ Career Guidance
-✓ 95% Placement Rate
-
-Many of our students have been placed in top companies. Would you like to know more about any specific course?`;
+        return `Yes! We provide comprehensive job assistance! 💼\n\n✅ 95% Placement Rate\n✅ Resume Building\n✅ Interview Preparation\n✅ Job Referrals\n✅ Mock Interviews\n✅ Career Guidance\n\nMany students placed in top MNCs!`;
     }
 
     // Contact information
     if (message.includes('contact') || message.includes('phone') || message.includes('email') || message.includes('call')) {
-        return `You can reach us at:
-
-📞 +91 98765 43210
-📞 +91 98765 43211
-📧 info@shashanksaptraining.com
-📍 Hyderabad, Telangana
-
-Our team is available Mon-Sat, 9 AM - 8 PM. Feel free to call us anytime!`;
+        return `Contact us anytime:\n\n☎️ +91 98765 43210\n☎️ +91 98765 43211\n📧 info@shashanksaptraining.com\n📍 Hyderabad, Telangana\n\n⏰ Mon-Sat: 9 AM - 8 PM`;
     }
 
     // Location
     if (message.includes('location') || message.includes('address') || message.includes('where')) {
-        return `We are located in Hyderabad, Telangana, India.
-
-We offer both:
-🏫 Classroom Training at our center
-💻 Online Training from anywhere
-
-Which mode of training interests you?`;
+        return `We're located in Hyderabad, Telangana, India\n\n🏫 Classroom Training Available\n💻 Online Training Available\n\nWhich mode interests you?`;
     }
 
     // Greeting responses
     if (message.includes('hello') || message.includes('hi') || message.includes('hey')) {
-        return `Hello ${userInfo.name}! How can I assist you with your SAP learning journey today?`;
+        return `Hello ${userInfo.name}! 👋\nHow can I assist you today?`;
     }
 
     if (message.includes('thank') || message.includes('thanks')) {
-        return `You're welcome! Is there anything else you'd like to know about our SAP training programs?`;
+        return `You're welcome! 😊\nIs there anything else you'd like to know?`;
     }
 
     // Default response
-    return `Thank you for your message! Our team will get back to you shortly at ${userInfo.email} or ${userInfo.phone}.
-
-In the meantime, you can ask me about:
-• Course details
-• Training schedules
-• Fees & payments
-• Job assistance
-• Demo classes
-
-Or call us at +91 98765 43210 for immediate assistance.`;
+    return `Thank you for your message! Our team will contact you soon at ${userInfo.email} or ${userInfo.phone}.\n\nYou can ask about:\n• Course Details\n• Training Schedules\n• Fees & Payment\n• Job Assistance\n• Demo Classes\n\nOr call us at: +91 98765 43210`;
 }
 
-// Check if user info exists in localStorage (returning user)
-window.addEventListener('load', () => {
-    const savedUserInfo = localStorage.getItem('chatUserInfo');
-    if (savedUserInfo) {
-        userInfo = JSON.parse(savedUserInfo);
-        // Could optionally auto-login returning users
-        // For now, we'll just keep the signup form
-    }
-});
+// ==================================================
+// NOTIFICATION SYSTEM
+// ==================================================
+function showNotification(message, type = 'success') {
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 100px;
+        right: 2rem;
+        background: ${type === 'success' ? 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' : 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'};
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        z-index: 10000;
+        animation: slideInRight 0.3s ease;
+        max-width: 400px;
+    `;
 
-// Add scroll animation for sections
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+        notification.style.animation = 'slideOutRight 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+    }, 4000);
+}
+
+// Add CSS animations for notifications
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideInRight {
+        from {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    @keyframes slideOutRight {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(style);
+
+// ==================================================
+// INTERSECTION OBSERVER FOR SCROLL ANIMATIONS
+// ==================================================
 const observerOptions = {
     threshold: 0.1,
-    rootMargin: '0px 0px -100px 0px'
+    rootMargin: '0px 0px -50px 0px'
 };
 
 const observer = new IntersectionObserver((entries) => {
@@ -347,7 +398,7 @@ const observer = new IntersectionObserver((entries) => {
     });
 }, observerOptions);
 
-// Observe all sections for animation
+// Observe sections
 document.querySelectorAll('section').forEach(section => {
     section.style.opacity = '0';
     section.style.transform = 'translateY(30px)';
@@ -355,22 +406,74 @@ document.querySelectorAll('section').forEach(section => {
     observer.observe(section);
 });
 
-// Add animation to cards on scroll
+// Observe cards
 const cardObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
+    entries.forEach((entry, index) => {
         if (entry.isIntersecting) {
-            entry.target.style.opacity = '1';
-            entry.target.style.transform = 'translateY(0)';
+            setTimeout(() => {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }, index * 100);
         }
     });
 }, { threshold: 0.1 });
 
-document.querySelectorAll('.service-card, .course-card, .testimonial-card').forEach(card => {
+document.querySelectorAll('.feature-card, .course-card, .testimonial-card').forEach(card => {
     card.style.opacity = '0';
     card.style.transform = 'translateY(20px)';
     card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
     cardObserver.observe(card);
 });
 
-console.log('Shashank SAP Training Website - Loaded Successfully!');
-console.log('Website built for professional SAP training and course promotion');
+// ==================================================
+// CHECK FOR RETURNING USER
+// ==================================================
+window.addEventListener('load', () => {
+    const savedUserInfo = localStorage.getItem('chatUserInfo');
+    if (savedUserInfo) {
+        userInfo = JSON.parse(savedUserInfo);
+    }
+});
+
+// ==================================================
+// FORM VALIDATION
+// ==================================================
+function validateEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+}
+
+function validatePhone(phone) {
+    const re = /^[\d\s\-\+\(\)]+$/;
+    return re.test(phone) && phone.replace(/\D/g, '').length >= 10;
+}
+
+// Add real-time validation to forms
+document.querySelectorAll('input[type="email"]').forEach(input => {
+    input.addEventListener('blur', () => {
+        if (input.value && !validateEmail(input.value)) {
+            input.style.borderColor = '#f5576c';
+            showNotification('Please enter a valid email address', 'error');
+        } else {
+            input.style.borderColor = '';
+        }
+    });
+});
+
+document.querySelectorAll('input[type="tel"]').forEach(input => {
+    input.addEventListener('blur', () => {
+        if (input.value && !validatePhone(input.value)) {
+            input.style.borderColor = '#f5576c';
+            showNotification('Please enter a valid phone number', 'error');
+        } else {
+            input.style.borderColor = '';
+        }
+    });
+});
+
+// ==================================================
+// CONSOLE MESSAGE
+// ==================================================
+console.log('%c🚀 Shashank SAP Training - Modern Website', 'color: #667eea; font-size: 20px; font-weight: bold;');
+console.log('%cDev1 Branch - Ultra Modern Design with Glassmorphism & Dark Mode', 'color: #764ba2; font-size: 14px;');
+console.log('%cBuilt with ❤️ for SAP Training Excellence', 'color: #4facfe; font-size: 12px;');

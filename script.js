@@ -115,7 +115,7 @@ window.addEventListener('scroll', () => {
 // ==================================================
 const contactForm = document.getElementById('contactForm');
 
-contactForm.addEventListener('submit', (e) => {
+contactForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const formData = {
@@ -123,17 +123,35 @@ contactForm.addEventListener('submit', (e) => {
         email: document.getElementById('email').value,
         phone: document.getElementById('phone').value,
         course: document.getElementById('course').value,
-        message: document.getElementById('message').value,
-        timestamp: new Date().toISOString()
+        message: document.getElementById('message').value
     };
 
     console.log('Contact Form Submitted:', formData);
 
-    // Show success message
-    showNotification(`Thank you, ${formData.name}! We'll contact you soon at ${formData.email}.`, 'success');
+    try {
+        // Send data to backend API
+        const response = await fetch('http://localhost:3000/api/contact', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        });
 
-    // Reset form
-    contactForm.reset();
+        const result = await response.json();
+
+        if (result.success) {
+            // Show success message
+            showNotification(`Thank you, ${formData.name}! We have received your inquiry and will contact you soon.`, 'success');
+            // Reset form
+            contactForm.reset();
+        } else {
+            showNotification(result.message || 'Something went wrong. Please try again.', 'error');
+        }
+    } catch (error) {
+        console.error('Error submitting form:', error);
+        showNotification('Unable to submit form. Please try again later.', 'error');
+    }
 });
 
 // ==================================================
@@ -166,34 +184,54 @@ closeChat.addEventListener('click', () => {
 });
 
 // Handle Chat Signup Form
-chatSignupForm.addEventListener('submit', (e) => {
+chatSignupForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     userInfo = {
         name: document.getElementById('chatName').value,
         email: document.getElementById('chatEmail').value,
-        phone: document.getElementById('chatPhone').value,
-        timestamp: new Date().toISOString()
+        phone: document.getElementById('chatPhone').value
     };
 
     console.log('Chat User Info:', userInfo);
 
-    // Store user info
-    localStorage.setItem('chatUserInfo', JSON.stringify(userInfo));
+    try {
+        // Send data to backend API
+        const response = await fetch('http://localhost:3000/api/chat/signup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(userInfo)
+        });
 
-    // Hide welcome screen and show chat
-    welcomeScreen.style.display = 'none';
-    chatMessages.style.display = 'flex';
-    chatInput.style.display = 'flex';
+        const result = await response.json();
 
-    // Add welcome message
-    setTimeout(() => {
-        addBotMessage(`Hello ${userInfo.name}! 👋 Welcome to Shashank SAP Training!`);
-    }, 300);
+        if (result.success) {
+            // Store user info with ID from backend
+            userInfo.id = result.userId;
+            localStorage.setItem('chatUserInfo', JSON.stringify(userInfo));
 
-    setTimeout(() => {
-        addBotMessage(`I'm here to help you with:\n• Course Information\n• Training Schedules\n• Fees & Payment Options\n• Job Assistance\n• Free Demo Classes\n\nWhat would you like to know?`);
-    }, 800);
+            // Hide welcome screen and show chat
+            welcomeScreen.style.display = 'none';
+            chatMessages.style.display = 'flex';
+            chatInput.style.display = 'flex';
+
+            // Add welcome message
+            setTimeout(() => {
+                addBotMessage(`Hello ${userInfo.name}! 👋 Welcome to Shashank SAP Training!`);
+            }, 300);
+
+            setTimeout(() => {
+                addBotMessage(`I'm here to help you with:\n• Course Information\n• Training Schedules\n• Fees & Payment Options\n• Job Assistance\n• Free Demo Classes\n\nWhat would you like to know?`);
+            }, 800);
+        } else {
+            showNotification('Unable to connect. Please try again.', 'error');
+        }
+    } catch (error) {
+        console.error('Error submitting chat signup:', error);
+        showNotification('Unable to connect. Please try again later.', 'error');
+    }
 });
 
 // Send Message
@@ -204,7 +242,7 @@ messageInput.addEventListener('keypress', (e) => {
     }
 });
 
-function sendMessage() {
+async function sendMessage() {
     const message = messageInput.value.trim();
 
     if (message === '') return;
@@ -214,6 +252,23 @@ function sendMessage() {
 
     // Clear input
     messageInput.value = '';
+
+    // Save message to backend
+    try {
+        await fetch('http://localhost:3000/api/chat/message', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                userId: userInfo?.id,
+                userInfo: userInfo,
+                message: message
+            })
+        });
+    } catch (error) {
+        console.error('Error saving message:', error);
+    }
 
     // Show typing indicator
     const typingIndicator = addTypingIndicator();

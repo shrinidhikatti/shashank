@@ -527,6 +527,80 @@ document.querySelectorAll('input[type="tel"]').forEach(input => {
 });
 
 // ==================================================
+// LOAD TESTIMONIALS FROM API
+// ==================================================
+async function loadTestimonials() {
+    try {
+        const response = await fetch('http://localhost:3000/api/testimonials');
+        const result = await response.json();
+
+        if (result.success && result.data.length > 0) {
+            const testimonialsGrid = document.querySelector('.testimonials-grid');
+
+            // Clear existing testimonials
+            testimonialsGrid.innerHTML = '';
+
+            // Map course codes to readable names
+            const courseNames = {
+                's4hana': 'SAP S/4 HANA',
+                'fico': 'SAP FICO',
+                'abap': 'SAP ABAP',
+                'mm': 'SAP MM',
+                'sd': 'SAP SD',
+                'fiori': 'SAP Fiori',
+                'hana': 'SAP HANA',
+                'other': 'SAP'
+            };
+
+            // Display up to 6 testimonials
+            result.data.slice(0, 6).forEach(testimonial => {
+                const initials = testimonial.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+                const courseName = courseNames[testimonial.course] || testimonial.course;
+                const roleText = testimonial.role ? `${courseName} - ${testimonial.role}` : `${courseName} Consultant`;
+
+                const testimonialCard = document.createElement('div');
+                testimonialCard.className = 'testimonial-card glass-effect';
+                testimonialCard.innerHTML = `
+                    <div class="testimonial-header">
+                        <div class="testimonial-avatar">
+                            <div class="avatar-gradient">${initials}</div>
+                        </div>
+                        <div class="testimonial-author">
+                            <h4>${escapeHtml(testimonial.name)}</h4>
+                            <p>${escapeHtml(roleText)}</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-rating">
+                        ${'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>'.repeat(testimonial.rating)}
+                    </div>
+                    <p class="testimonial-text">
+                        "${escapeHtml(testimonial.text)}"
+                    </p>
+                `;
+
+                testimonialsGrid.appendChild(testimonialCard);
+
+                // Add fade-in animation
+                testimonialCard.style.opacity = '0';
+                testimonialCard.style.transform = 'translateY(20px)';
+                testimonialCard.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+
+                setTimeout(() => {
+                    testimonialCard.style.opacity = '1';
+                    testimonialCard.style.transform = 'translateY(0)';
+                }, 100);
+            });
+        }
+    } catch (error) {
+        console.error('Error loading testimonials:', error);
+        // Keep default testimonials if API fails
+    }
+}
+
+// Load testimonials when page loads
+window.addEventListener('load', loadTestimonials);
+
+// ==================================================
 // CONSOLE MESSAGE
 // ==================================================
 console.log('%c🚀 Shashank SAP Training - Modern Website', 'color: #667eea; font-size: 20px; font-weight: bold;');

@@ -1237,6 +1237,17 @@ section {
     bottom: 2rem;
     right: 2rem;
     z-index: 1000;
+    transform: none !important;
+    animation: none !important;
+}
+
+.chat-widget * {
+    transform: none !important;
+}
+
+.chat-widget .avatar-gradient {
+    animation: none !important;
+    transform: none !important;
 }
 
 .chat-button {
@@ -1278,12 +1289,16 @@ section {
     justify-content: center;
     font-size: 0.75rem;
     font-weight: 700;
-    animation: pulse 2s infinite;
+    animation: pulseNotification 2s infinite !important;
 }
 
-@keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.1); }
+@keyframes pulseNotification {
+    0%, 100% {
+        transform: scale(1) rotate(0deg) !important;
+    }
+    50% {
+        transform: scale(1.1) rotate(0deg) !important;
+    }
 }
 
 .chat-box {
@@ -1296,11 +1311,12 @@ section {
     display: none;
     flex-direction: column;
     overflow: hidden;
-    animation: slideUp 0.3s ease;
+    will-change: opacity;
 }
 
 .chat-box.active {
     display: flex;
+    animation: slideUp 0.3s ease forwards;
 }
 
 @keyframes slideUp {
@@ -1320,16 +1336,30 @@ section {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    transform: none !important;
+    animation: none !important;
+}
+
+.chat-header * {
+    transform: none !important;
+    animation: none !important;
 }
 
 .chat-header-info {
     display: flex;
     align-items: center;
     gap: 1rem;
+    transform: none !important;
 }
 
 .chat-avatar {
     position: relative;
+    transform: none !important;
+}
+
+.chat-avatar .avatar-gradient {
+    transform: none !important;
+    animation: none !important;
 }
 
 .status-indicator {
@@ -1382,15 +1412,22 @@ section {
     overflow-y: auto;
     padding: 1.5rem;
     background: var(--bg-primary);
+    transform: none !important;
+}
+
+.chat-content * {
+    transform: none !important;
 }
 
 .welcome-screen {
     text-align: center;
+    transform: none !important;
 }
 
 .welcome-icon {
     font-size: 3rem;
     margin-bottom: 1rem;
+    transform: none !important;
 }
 
 .welcome-screen h3 {
@@ -1398,20 +1435,32 @@ section {
     font-weight: 700;
     margin-bottom: 0.5rem;
     color: var(--text-primary);
+    transform: none !important;
 }
 
 .welcome-screen p {
     color: var(--text-secondary);
     margin-bottom: 2rem;
     line-height: 1.6;
+    transform: none !important;
+}
+
+.chat-signup-form {
+    transform: none !important;
 }
 
 .chat-signup-form .form-group {
     margin-bottom: 1rem;
+    transform: none !important;
 }
 
 .chat-signup-form input {
     width: 100%;
+    transform: none !important;
+}
+
+.chat-signup-form button {
+    transform: none !important;
 }
 
 .chat-messages {

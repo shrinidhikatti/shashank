@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Feedback - Shashank SAP Training</title>
+    <meta name="description" content="Share your learning experience at Shashank SAP Training">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            color: #333;
+        }
+
+        [data-theme="dark"] body {
+            color: #e0e0e0;
+        }
+
+        .feedback-page {
+            min-height: 100vh;
+            padding: 40px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .feedback-container {
+            max-width: 700px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .feedback-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .feedback-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .feedback-header p {
+            font-size: 1.1rem;
+            color: #666;
+        }
+
+        [data-theme="dark"] .feedback-header p {
+            color: #b0b0b0;
+        }
+
+        .feedback-form-wrapper {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] .feedback-form-wrapper {
+            background: rgba(30, 30, 40, 0.95);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .form-section h3 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            border-radius: 10px;
+            font-size: 1rem;
+            background: white;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+
+        [data-theme="dark"] .form-group input,
+        [data-theme="dark"] .form-group select,
+        [data-theme="dark"] .form-group textarea {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.1);
+            color: #e0e0e0;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .rating-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .rating-label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        [data-theme="dark"] .rating-label {
+            color: #e0e0e0;
+        }
+
+        .star-rating {
+            display: flex;
+            gap: 10px;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+        }
+
+        .star-rating input {
+            display: none;
+        }
+
+        .star-rating label {
+            cursor: pointer;
+            font-size: 2rem;
+            color: #ddd;
+            transition: color 0.2s;
+        }
+
+        .star-rating input:checked ~ label,
+        .star-rating label:hover,
+        .star-rating label:hover ~ label {
+            color: #ffd700;
+        }
+
+        .success-message {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .success-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .back-home {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .checkbox-group label {
+            color: #333;
+            cursor: pointer;
+        }
+
+        [data-theme="dark"] .checkbox-group label {
+            color: #e0e0e0;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .success-message h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .success-message p {
+            color: #666;
+        }
+
+        [data-theme="dark"] .success-message p {
+            color: #b0b0b0;
+        }
+
+        @media (max-width: 768px) {
+            .feedback-form-wrapper {
+                padding: 30px 20px;
+            }
+
+            .feedback-header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animation">
+        <div class="gradient-bg"></div>
+        <div class="floating-shapes">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+        </div>
+    </div>
+
+    <div class="feedback-page">
+        <div class="feedback-container">
+            <div class="feedback-header">
+                <h1>Student Feedback</h1>
+                <p>Your feedback helps us improve and helps future students make informed decisions</p>
+            </div>
+
+            <div class="feedback-form-wrapper glass-effect">
+                <form id="feedbackForm">
+                    <div class="form-section">
+                        <h3>Personal Information</h3>
+                        <div class="form-group">
+                            <input type="text" id="studentName" name="studentName" placeholder="Your Name *" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" id="studentEmail" name="studentEmail" placeholder="Your Email *" required>
+                        </div>
+                        <div class="form-group">
+                            <select id="courseCompleted" name="courseCompleted" required>
+                                <option value="">Course Completed *</option>
+                                <option value="s4hana">SAP S/4 HANA</option>
+                                <option value="fico">SAP FICO</option>
+                                <option value="abap">SAP ABAP</option>
+                                <option value="mm">SAP MM</option>
+                                <option value="sd">SAP SD</option>
+                                <option value="fiori">SAP Fiori</option>
+                                <option value="hana">SAP HANA</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="currentRole" name="currentRole" placeholder="Current Role/Position (Optional)">
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Rate Your Experience</h3>
+
+                        <div class="rating-group">
+                            <label class="rating-label">Overall Experience</label>
+                            <div class="star-rating">
+                                <input type="radio" id="overall-5" name="overallRating" value="5" required>
+                                <label for="overall-5">★</label>
+                                <input type="radio" id="overall-4" name="overallRating" value="4">
+                                <label for="overall-4">★</label>
+                                <input type="radio" id="overall-3" name="overallRating" value="3">
+                                <label for="overall-3">★</label>
+                                <input type="radio" id="overall-2" name="overallRating" value="2">
+                                <label for="overall-2">★</label>
+                                <input type="radio" id="overall-1" name="overallRating" value="1">
+                                <label for="overall-1">★</label>
+                            </div>
+                        </div>
+
+                        <div class="rating-group">
+                            <label class="rating-label">Instructor Quality</label>
+                            <div class="star-rating">
+                                <input type="radio" id="instructor-5" name="instructorRating" value="5" required>
+                                <label for="instructor-5">★</label>
+                                <input type="radio" id="instructor-4" name="instructorRating" value="4">
+                                <label for="instructor-4">★</label>
+                                <input type="radio" id="instructor-3" name="instructorRating" value="3">
+                                <label for="instructor-3">★</label>
+                                <input type="radio" id="instructor-2" name="instructorRating" value="2">
+                                <label for="instructor-2">★</label>
+                                <input type="radio" id="instructor-1" name="instructorRating" value="1">
+                                <label for="instructor-1">★</label>
+                            </div>
+                        </div>
+
+                        <div class="rating-group">
+                            <label class="rating-label">Course Content</label>
+                            <div class="star-rating">
+                                <input type="radio" id="content-5" name="contentRating" value="5" required>
+                                <label for="content-5">★</label>
+                                <input type="radio" id="content-4" name="contentRating" value="4">
+                                <label for="content-4">★</label>
+                                <input type="radio" id="content-3" name="contentRating" value="3">
+                                <label for="content-3">★</label>
+                                <input type="radio" id="content-2" name="contentRating" value="2">
+                                <label for="content-2">★</label>
+                                <input type="radio" id="content-1" name="contentRating" value="1">
+                                <label for="content-1">★</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Your Feedback</h3>
+                        <div class="form-group">
+                            <textarea id="feedbackText" name="feedbackText" rows="5" placeholder="Share your experience, what you learned, and how the course helped you... *" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <textarea id="improvements" name="improvements" rows="3" placeholder="What could we improve? (Optional)"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="displayPublicly" name="displayPublicly">
+                            <label for="displayPublicly">I agree to display my feedback publicly as a testimonial on the website</label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-large btn-gradient" style="width: 100%;">
+                        <span>Submit Feedback</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                            <polyline points="12 5 19 12 12 19"/>
+                        </svg>
+                    </button>
+                </form>
+
+                <div id="successMessage" class="success-message">
+                    <div class="success-icon">✓</div>
+                    <h2>Thank You!</h2>
+                    <p>Your feedback has been submitted successfully. We appreciate you taking the time to share your experience.</p>
+                    <div class="back-home">
+                        <a href="index.html" class="btn btn-gradient">Back to Home</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('feedbackForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const formData = {
+                studentName: document.getElementById('studentName').value,
+                studentEmail: document.getElementById('studentEmail').value,
+                courseCompleted: document.getElementById('courseCompleted').value,
+                currentRole: document.getElementById('currentRole').value,
+                overallRating: document.querySelector('input[name="overallRating"]:checked').value,
+                instructorRating: document.querySelector('input[name="instructorRating"]:checked').value,
+                contentRating: document.querySelector('input[name="contentRating"]:checked').value,
+                feedbackText: document.getElementById('feedbackText').value,
+                improvements: document.getElementById('improvements').value,
+                displayPublicly: document.getElementById('displayPublicly').checked
+            };
+
+            try {
+                const response = await fetch('http://localhost:3000/api/feedback', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    document.getElementById('feedbackForm').style.display = 'none';
+                    document.getElementById('successMessage').classList.add('show');
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again later.');
+            }
+        });
+    </script>
+</body>
+</html>

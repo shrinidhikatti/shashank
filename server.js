@@ -8,6 +8,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const path = require('path');
+const multer = require('multer');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -26,10 +27,41 @@ if (!fs.existsSync(dataDir)) {
     fs.mkdirSync(dataDir);
 }
 
+// Create uploads directory for PDFs
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir);
+}
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, uploadsDir);
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, uniqueSuffix + '-' + file.originalname);
+    }
+});
+
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+    fileFilter: function (req, file, cb) {
+        if (file.mimetype === 'application/pdf') {
+            cb(null, true);
+        } else {
+            cb(new Error('Only PDF files are allowed!'), false);
+        }
+    }
+});
+
 // File paths for data storage
 const contactsFile = path.join(dataDir, 'contacts.json');
 const chatUsersFile = path.join(dataDir, 'chat-users.json');
 const chatMessagesFile = path.join(dataDir, 'chat-messages.json');
+const feedbackFile = path.join(dataDir, 'feedback.json');
+const materialsFile = path.join(dataDir, 'materials.json');
 
 // Initialize files if they don't exist
 const initializeFile = (filePath) => {
@@ -41,6 +73,8 @@ const initializeFile = (filePath) => {
 initializeFile(contactsFile);
 initializeFile(chatUsersFile);
 initializeFile(chatMessagesFile);
+initializeFile(feedbackFile);
+initializeFile(materialsFile);
 
 // Helper function to read data
 const readData = (filePath) => {
@@ -253,6 +287,336 @@ app.post('/api/chat/message', (req, res) => {
 });
 
 // ==================================================
+// STUDENT FEEDBACK SUBMISSION
+// ==================================================
+app.post('/api/feedback', (req, res) => {
+    try {
+        const {
+            studentName,
+            studentEmail,
+            courseCompleted,
+            currentRole,
+            overallRating,
+            instructorRating,
+            contentRating,
+            feedbackText,
+            improvements,
+            displayPublicly
+        } = req.body;
+
+        // Validation
+        if (!studentName || !studentEmail || !courseCompleted || !feedbackText) {
+            return res.status(400).json({
+                success: false,
+                message: 'Name, email, course, and feedback are required fields'
+            });
+        }
+
+        if (!overallRating || !instructorRating || !contentRating) {
+            return res.status(400).json({
+                success: false,
+                message: 'All ratings are required'
+            });
+        }
+
+        // Create feedback object
+        const feedback = {
+            id: Date.now().toString(),
+            studentName,
+            studentEmail,
+            courseCompleted,
+            currentRole: currentRole || '',
+            ratings: {
+                overall: parseInt(overallRating),
+                instructor: parseInt(instructorRating),
+                content: parseInt(contentRating)
+            },
+            feedbackText,
+            improvements: improvements || '',
+            displayPublicly: displayPublicly === true,
+            timestamp: new Date().toISOString(),
+            status: 'approved' // Auto-approve for now, can add moderation later
+        };
+
+        // Read existing feedback
+        const feedbackList = readData(feedbackFile);
+
+        // Add new feedback
+        feedbackList.push(feedback);
+
+        // Save to file
+        const saved = writeData(feedbackFile, feedbackList);
+
+        if (saved) {
+            console.log('⭐ New student feedback received:', feedback);
+            res.json({
+                success: true,
+                message: 'Thank you for your feedback!',
+                feedbackId: feedback.id
+            });
+        } else {
+            throw new Error('Failed to save feedback');
+        }
+
+    } catch (error) {
+        console.error('❌ Error processing feedback:', error);
+        res.status(500).json({
+            success: false,
+            message: 'An error occurred. Please try again later.'
+        });
+    }
+});
+
+// ==================================================
+// GET PUBLIC TESTIMONIALS (for display on website)
+// ==================================================
+app.get('/api/testimonials', (req, res) => {
+    try {
+        const feedbackList = readData(feedbackFile);
+
+        // Filter only approved feedback marked for public display
+        const testimonials = feedbackList
+            .filter(f => f.displayPublicly && f.status === 'approved')
+            .map(f => ({
+                id: f.id,
+                name: f.studentName,
+                course: f.courseCompleted,
+                role: f.currentRole,
+                rating: f.ratings.overall,
+                text: f.feedbackText,
+                timestamp: f.timestamp
+            }))
+            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+        res.json({
+            success: true,
+            count: testimonials.length,
+            data: testimonials
+        });
+    } catch (error) {
+        console.error('❌ Error fetching testimonials:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching testimonials'
+        });
+    }
+});
+
+// ==================================================
+// COURSE MATERIALS / PDF MANAGEMENT
+// ==================================================
+
+// Upload course material (PDF)
+app.post('/api/materials/upload', upload.single('pdf'), (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: 'No file uploaded'
+            });
+        }
+
+        const { title, course, description } = req.body;
+
+        if (!title || !course || !description) {
+            // Delete uploaded file if validation fails
+            fs.unlinkSync(req.file.path);
+            return res.status(400).json({
+                success: false,
+                message: 'Title, course, and description are required'
+            });
+        }
+
+        // Create material object
+        const material = {
+            id: Date.now().toString(),
+            title,
+            course,
+            description,
+            filename: req.file.filename,
+            originalName: req.file.originalname,
+            fileSize: formatFileSize(req.file.size),
+            filePath: req.file.path,
+            uploadDate: new Date().toISOString()
+        };
+
+        // Read existing materials
+        const materials = readData(materialsFile);
+
+        // Add new material
+        materials.push(material);
+
+        // Save to file
+        const saved = writeData(materialsFile, materials);
+
+        if (saved) {
+            console.log('📄 New course material uploaded:', material);
+            res.json({
+                success: true,
+                message: 'Material uploaded successfully!',
+                materialId: material.id
+            });
+        } else {
+            // Delete uploaded file if save fails
+            fs.unlinkSync(req.file.path);
+            throw new Error('Failed to save material');
+        }
+
+    } catch (error) {
+        console.error('❌ Error uploading material:', error);
+        res.status(500).json({
+            success: false,
+            message: 'An error occurred while uploading the material.'
+        });
+    }
+});
+
+// Get all course materials
+app.get('/api/materials', (req, res) => {
+    try {
+        const materials = readData(materialsFile);
+
+        res.json({
+            success: true,
+            count: materials.length,
+            data: materials.map(m => ({
+                id: m.id,
+                title: m.title,
+                course: m.course,
+                description: m.description,
+                filename: m.originalName,
+                fileSize: m.fileSize,
+                uploadDate: m.uploadDate
+            }))
+        });
+    } catch (error) {
+        console.error('❌ Error fetching materials:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching materials'
+        });
+    }
+});
+
+// Download material
+app.get('/api/materials/download/:id', (req, res) => {
+    try {
+        const materials = readData(materialsFile);
+        const material = materials.find(m => m.id === req.params.id);
+
+        if (!material) {
+            return res.status(404).json({
+                success: false,
+                message: 'Material not found'
+            });
+        }
+
+        // Check if file exists
+        if (!fs.existsSync(material.filePath)) {
+            return res.status(404).json({
+                success: false,
+                message: 'File not found on server'
+            });
+        }
+
+        res.download(material.filePath, material.originalName);
+    } catch (error) {
+        console.error('❌ Error downloading material:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error downloading material'
+        });
+    }
+});
+
+// View material (inline)
+app.get('/api/materials/view/:id', (req, res) => {
+    try {
+        const materials = readData(materialsFile);
+        const material = materials.find(m => m.id === req.params.id);
+
+        if (!material) {
+            return res.status(404).json({
+                success: false,
+                message: 'Material not found'
+            });
+        }
+
+        // Check if file exists
+        if (!fs.existsSync(material.filePath)) {
+            return res.status(404).json({
+                success: false,
+                message: 'File not found on server'
+            });
+        }
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename="${material.originalName}"`);
+        fs.createReadStream(material.filePath).pipe(res);
+    } catch (error) {
+        console.error('❌ Error viewing material:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error viewing material'
+        });
+    }
+});
+
+// Delete material
+app.delete('/api/materials/:id', (req, res) => {
+    try {
+        const materials = readData(materialsFile);
+        const materialIndex = materials.findIndex(m => m.id === req.params.id);
+
+        if (materialIndex === -1) {
+            return res.status(404).json({
+                success: false,
+                message: 'Material not found'
+            });
+        }
+
+        const material = materials[materialIndex];
+
+        // Delete file from disk
+        if (fs.existsSync(material.filePath)) {
+            fs.unlinkSync(material.filePath);
+        }
+
+        // Remove from array
+        materials.splice(materialIndex, 1);
+
+        // Save updated list
+        const saved = writeData(materialsFile, materials);
+
+        if (saved) {
+            console.log('🗑️  Material deleted:', material.title);
+            res.json({
+                success: true,
+                message: 'Material deleted successfully'
+            });
+        } else {
+            throw new Error('Failed to save updated materials list');
+        }
+
+    } catch (error) {
+        console.error('❌ Error deleting material:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error deleting material'
+        });
+    }
+});
+
+// Helper function to format file size
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+}
+
+// ==================================================
 // GET ALL SUBMISSIONS (Admin endpoint - should be protected in production)
 // ==================================================
 app.get('/api/admin/contacts', (req, res) => {
@@ -303,6 +667,22 @@ app.get('/api/admin/chat-messages', (req, res) => {
     }
 });
 
+app.get('/api/admin/feedback', (req, res) => {
+    try {
+        const feedbackList = readData(feedbackFile);
+        res.json({
+            success: true,
+            count: feedbackList.length,
+            data: feedbackList
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching feedback'
+        });
+    }
+});
+
 // ==================================================
 // EXPORT DATA AS CSV (Admin endpoint)
 // ==================================================
@@ -341,10 +721,18 @@ app.listen(PORT, () => {
     console.log(`📝 Contact Form API: http://localhost:${PORT}/api/contact`);
     console.log(`💬 Chat Signup API: http://localhost:${PORT}/api/chat/signup`);
     console.log(`💬 Chat Message API: http://localhost:${PORT}/api/chat/message`);
+    console.log(`⭐ Student Feedback API: http://localhost:${PORT}/api/feedback`);
+    console.log(`📣 Public Testimonials: http://localhost:${PORT}/api/testimonials`);
+    console.log(`📄 Course Materials API: http://localhost:${PORT}/api/materials`);
+    console.log(`\n🎓 Student Pages:`);
+    console.log(`   - Give Feedback: http://localhost:${PORT}/feedback.html`);
+    console.log(`   - View Materials: http://localhost:${PORT}/course-materials.html`);
     console.log(`\n🔐 Admin Endpoints:`);
+    console.log(`   - Upload Materials: http://localhost:${PORT}/admin-upload.html`);
     console.log(`   - View Contacts: http://localhost:${PORT}/api/admin/contacts`);
     console.log(`   - View Chat Users: http://localhost:${PORT}/api/admin/chat-users`);
     console.log(`   - View Messages: http://localhost:${PORT}/api/admin/chat-messages`);
+    console.log(`   - View Feedback: http://localhost:${PORT}/api/admin/feedback`);
     console.log(`   - Export Contacts CSV: http://localhost:${PORT}/api/admin/export/contacts`);
     console.log('\n' + '='.repeat(50) + '\n');
 });

@@ -27,9 +27,10 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname));
 
 // Create uploads directory for PDFs
-const uploadsDir = path.join(__dirname, 'uploads');
+// Use /tmp for Vercel serverless environment (read-only filesystem)
+const uploadsDir = process.env.VERCEL ? '/tmp/uploads' : path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir);
+    fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
 // Configure multer for file uploads

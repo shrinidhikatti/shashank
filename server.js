@@ -519,6 +519,38 @@ app.delete('/api/materials/:id', async (req, res) => {
 // ==================================================
 // ADMIN ENDPOINTS
 // ==================================================
+
+// Admin Login
+app.post('/api/admin/login', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+
+        // Simple credential check (you can enhance this with database or environment variables)
+        const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
+        const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
+
+        if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+            console.log('✅ Admin login successful:', username);
+            res.json({
+                success: true,
+                message: 'Login successful'
+            });
+        } else {
+            console.log('❌ Failed login attempt:', username);
+            res.status(401).json({
+                success: false,
+                message: 'Invalid username or password'
+            });
+        }
+    } catch (error) {
+        console.error('❌ Error during admin login:', error);
+        res.status(500).json({
+            success: false,
+            message: 'An error occurred. Please try again.'
+        });
+    }
+});
+
 app.get('/api/admin/contacts', async (req, res) => {
     try {
         const contacts = await sql`

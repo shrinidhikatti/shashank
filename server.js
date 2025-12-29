@@ -24,7 +24,9 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Serve static files (HTML, CSS, JS)
-app.use(express.static(__dirname));
+const publicPath = process.env.VERCEL ? path.join(process.cwd(), 'public') : __dirname;
+app.use(express.static(publicPath));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Create uploads directory for PDFs
 // Use /tmp for Vercel serverless environment (read-only filesystem)

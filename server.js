@@ -620,28 +620,34 @@ app.get('/api/admin/export/contacts', async (req, res) => {
 // ==================================================
 // START SERVER
 // ==================================================
-app.listen(PORT, () => {
-    console.log('\n' + '='.repeat(50));
-    console.log('🚀 SHASHANK SAP TRAINING - BACKEND SERVER');
-    console.log('='.repeat(50));
-    console.log(`✅ Server running on: http://localhost:${PORT}`);
-    console.log(`🗄️  Database: Neon PostgreSQL (Connected)`);
-    console.log(`📊 API Health Check: http://localhost:${PORT}/api/health`);
-    console.log(`📝 Contact Form API: http://localhost:${PORT}/api/contact`);
-    console.log(`💬 Chat Signup API: http://localhost:${PORT}/api/chat/signup`);
-    console.log(`💬 Chat Message API: http://localhost:${PORT}/api/chat/message`);
-    console.log(`⭐ Student Feedback API: http://localhost:${PORT}/api/feedback`);
-    console.log(`📣 Public Testimonials: http://localhost:${PORT}/api/testimonials`);
-    console.log(`📄 Course Materials API: http://localhost:${PORT}/api/materials`);
-    console.log(`\n🎓 Student Pages:`);
-    console.log(`   - Give Feedback: http://localhost:${PORT}/feedback.html`);
-    console.log(`   - View Materials: http://localhost:${PORT}/course-materials.html`);
-    console.log(`\n🔐 Admin Endpoints:`);
-    console.log(`   - Upload Materials: http://localhost:${PORT}/admin-upload.html`);
-    console.log(`   - View Contacts: http://localhost:${PORT}/api/admin/contacts`);
-    console.log(`   - View Chat Users: http://localhost:${PORT}/api/admin/chat-users`);
-    console.log(`   - View Messages: http://localhost:${PORT}/api/admin/chat-messages`);
-    console.log(`   - View Feedback: http://localhost:${PORT}/api/admin/feedback`);
-    console.log(`   - Export Contacts CSV: http://localhost:${PORT}/api/admin/export/contacts`);
-    console.log('\n' + '='.repeat(50) + '\n');
-});
+// Only start the server if not in Vercel (for local development)
+if (!process.env.VERCEL) {
+    app.listen(PORT, () => {
+        console.log('\n' + '='.repeat(50));
+        console.log('🚀 SHASHANK SAP TRAINING - BACKEND SERVER');
+        console.log('='.repeat(50));
+        console.log(`✅ Server running on: http://localhost:${PORT}`);
+        console.log(`🗄️  Database: Neon PostgreSQL (Connected)`);
+        console.log(`📊 API Health Check: http://localhost:${PORT}/api/health`);
+        console.log(`📝 Contact Form API: http://localhost:${PORT}/api/contact`);
+        console.log(`💬 Chat Signup API: http://localhost:${PORT}/api/chat/signup`);
+        console.log(`💬 Chat Message API: http://localhost:${PORT}/api/chat/message`);
+        console.log(`⭐ Student Feedback API: http://localhost:${PORT}/api/feedback`);
+        console.log(`📣 Public Testimonials: http://localhost:${PORT}/api/testimonials`);
+        console.log(`📄 Course Materials API: http://localhost:${PORT}/api/materials`);
+        console.log(`\n🎓 Student Pages:`);
+        console.log(`   - Give Feedback: http://localhost:${PORT}/feedback.html`);
+        console.log(`   - View Materials: http://localhost:${PORT}/course-materials.html`);
+        console.log(`\n🔐 Admin Endpoints:`);
+        console.log(`   - Upload Materials: http://localhost:${PORT}/admin-upload.html`);
+        console.log(`   - View Contacts: http://localhost:${PORT}/api/admin/contacts`);
+        console.log(`   - View Chat Users: http://localhost:${PORT}/api/admin/chat-users`);
+        console.log(`   - View Messages: http://localhost:${PORT}/api/admin/chat-messages`);
+        console.log(`   - View Feedback: http://localhost:${PORT}/api/admin/feedback`);
+        console.log(`   - Export Contacts CSV: http://localhost:${PORT}/api/admin/export/contacts`);
+        console.log('\n' + '='.repeat(50) + '\n');
+    });
+}
+
+// Export the Express app for Vercel
+module.exports = app;

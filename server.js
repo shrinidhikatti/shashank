@@ -1,6 +1,6 @@
 // ==================================================
 // SHASHANK SAP TRAINING - BACKEND SERVER
-// Node.js + Express API for Form Submissions
+// Node.js + Express API with Neon PostgreSQL Database
 // ==================================================
 
 const express = require('express');
@@ -9,9 +9,14 @@ const bodyParser = require('body-parser');
 const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
+const { neon } = require('@neondatabase/serverless');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 7177;
+
+// Database connection
+const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_DQmKvBez0t4X@ep-lingering-leaf-a1m6w6ud-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require';
+const sql = neon(DATABASE_URL);
 
 // Middleware
 app.use(cors());
@@ -20,12 +25,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Serve static files (HTML, CSS, JS)
 app.use(express.static(__dirname));
-
-// Create data directory if it doesn't exist
-const dataDir = path.join(__dirname, 'data');
-if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir);
-}
 
 // Create uploads directory for PDFs
 const uploadsDir = path.join(__dirname, 'uploads');
@@ -56,65 +55,43 @@ const upload = multer({
     }
 });
 
-// File paths for data storage
-const contactsFile = path.join(dataDir, 'contacts.json');
-const chatUsersFile = path.join(dataDir, 'chat-users.json');
-const chatMessagesFile = path.join(dataDir, 'chat-messages.json');
-const feedbackFile = path.join(dataDir, 'feedback.json');
-const materialsFile = path.join(dataDir, 'materials.json');
-
-// Initialize files if they don't exist
-const initializeFile = (filePath) => {
-    if (!fs.existsSync(filePath)) {
-        fs.writeFileSync(filePath, JSON.stringify([], null, 2));
-    }
-};
-
-initializeFile(contactsFile);
-initializeFile(chatUsersFile);
-initializeFile(chatMessagesFile);
-initializeFile(feedbackFile);
-initializeFile(materialsFile);
-
-// Helper function to read data
-const readData = (filePath) => {
-    try {
-        const data = fs.readFileSync(filePath, 'utf8');
-        return JSON.parse(data);
-    } catch (error) {
-        console.error(`Error reading ${filePath}:`, error);
-        return [];
-    }
-};
-
-// Helper function to write data
-const writeData = (filePath, data) => {
-    try {
-        fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-        return true;
-    } catch (error) {
-        console.error(`Error writing to ${filePath}:`, error);
-        return false;
-    }
-};
+// Helper function to format file size
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+}
 
 // ==================================================
 // API ROUTES
 // ==================================================
 
 // Health check
-app.get('/api/health', (req, res) => {
-    res.json({
-        status: 'OK',
-        message: 'Shashank SAP Training Backend is running!',
-        timestamp: new Date().toISOString()
-    });
+app.get('/api/health', async (req, res) => {
+    try {
+        // Test database connection
+        await sql`SELECT 1`;
+        res.json({
+            status: 'OK',
+            message: 'Shashank SAP Training Backend is running!',
+            database: 'Connected to Neon PostgreSQL',
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        res.status(500).json({
+            status: 'ERROR',
+            message: 'Database connection failed',
+            timestamp: new Date().toISOString()
+        });
+    }
 });
 
 // ==================================================
 // CONTACT FORM SUBMISSION
 // ==================================================
-app.post('/api/contact', (req, res) => {
+app.post('/api/contact', async (req, res) => {
     try {
         const { name, email, phone, course, message } = req.body;
 
@@ -126,37 +103,21 @@ app.post('/api/contact', (req, res) => {
             });
         }
 
-        // Create contact object
-        const contact = {
-            id: Date.now().toString(),
-            name,
-            email,
-            phone,
-            course: course || 'Not specified',
-            message: message || '',
-            timestamp: new Date().toISOString(),
-            status: 'new'
-        };
+        // Insert into database
+        const result = await sql`
+            INSERT INTO contacts (name, email, phone, course, message, status)
+            VALUES (${name}, ${email}, ${phone}, ${course || 'Not specified'}, ${message || ''}, 'new')
+            RETURNING id
+        `;
 
-        // Read existing contacts
-        const contacts = readData(contactsFile);
+        const contactId = result[0].id;
 
-        // Add new contact
-        contacts.push(contact);
-
-        // Save to file
-        const saved = writeData(contactsFile, contacts);
-
-        if (saved) {
-            console.log('✅ New contact form submission:', contact);
-            res.json({
-                success: true,
-                message: 'Thank you! We have received your inquiry and will contact you soon.',
-                contactId: contact.id
-            });
-        } else {
-            throw new Error('Failed to save contact');
-        }
+        console.log('✅ New contact form submission:', { id: contactId, name, email });
+        res.json({
+            success: true,
+            message: 'Thank you! We have received your inquiry and will contact you soon.',
+            contactId: contactId
+        });
 
     } catch (error) {
         console.error('❌ Error processing contact form:', error);
@@ -170,7 +131,7 @@ app.post('/api/contact', (req, res) => {
 // ==================================================
 // CHAT USER SIGNUP
 // ==================================================
-app.post('/api/chat/signup', (req, res) => {
+app.post('/api/chat/signup', async (req, res) => {
     try {
         const { name, email, phone } = req.body;
 
@@ -182,48 +143,37 @@ app.post('/api/chat/signup', (req, res) => {
             });
         }
 
-        // Create user object
-        const user = {
-            id: Date.now().toString(),
-            name,
-            email,
-            phone,
-            timestamp: new Date().toISOString(),
-            status: 'active'
-        };
+        // Check if user already exists
+        const existingUser = await sql`
+            SELECT id, name, email FROM chat_users WHERE email = ${email}
+        `;
 
-        // Read existing users
-        const users = readData(chatUsersFile);
-
-        // Check if user already exists (by email)
-        const existingUser = users.find(u => u.email === email);
-        if (existingUser) {
-            console.log('👤 Returning user:', existingUser);
+        if (existingUser.length > 0) {
+            console.log('👤 Returning user:', existingUser[0]);
             return res.json({
                 success: true,
                 message: 'Welcome back!',
-                userId: existingUser.id,
+                userId: existingUser[0].id,
                 returning: true
             });
         }
 
-        // Add new user
-        users.push(user);
+        // Insert new user
+        const result = await sql`
+            INSERT INTO chat_users (name, email, phone, status)
+            VALUES (${name}, ${email}, ${phone}, 'active')
+            RETURNING id
+        `;
 
-        // Save to file
-        const saved = writeData(chatUsersFile, users);
+        const userId = result[0].id;
 
-        if (saved) {
-            console.log('✅ New chat user registered:', user);
-            res.json({
-                success: true,
-                message: 'Registration successful!',
-                userId: user.id,
-                returning: false
-            });
-        } else {
-            throw new Error('Failed to save user');
-        }
+        console.log('✅ New chat user registered:', { id: userId, name, email });
+        res.json({
+            success: true,
+            message: 'Registration successful!',
+            userId: userId,
+            returning: false
+        });
 
     } catch (error) {
         console.error('❌ Error processing chat signup:', error);
@@ -237,7 +187,7 @@ app.post('/api/chat/signup', (req, res) => {
 // ==================================================
 // CHAT MESSAGE SUBMISSION
 // ==================================================
-app.post('/api/chat/message', (req, res) => {
+app.post('/api/chat/message', async (req, res) => {
     try {
         const { userId, message, userInfo } = req.body;
 
@@ -248,34 +198,21 @@ app.post('/api/chat/message', (req, res) => {
             });
         }
 
-        // Create message object
-        const chatMessage = {
-            id: Date.now().toString(),
-            userId: userId || 'anonymous',
-            userInfo: userInfo || {},
-            message,
-            timestamp: new Date().toISOString()
-        };
+        // Insert message
+        const result = await sql`
+            INSERT INTO chat_messages (user_id, user_email, message, user_info)
+            VALUES (${userId || null}, ${userInfo?.email || null}, ${message}, ${JSON.stringify(userInfo || {})})
+            RETURNING id
+        `;
 
-        // Read existing messages
-        const messages = readData(chatMessagesFile);
+        const messageId = result[0].id;
 
-        // Add new message
-        messages.push(chatMessage);
-
-        // Save to file
-        const saved = writeData(chatMessagesFile, messages);
-
-        if (saved) {
-            console.log('💬 New chat message:', chatMessage);
-            res.json({
-                success: true,
-                message: 'Message saved',
-                messageId: chatMessage.id
-            });
-        } else {
-            throw new Error('Failed to save message');
-        }
+        console.log('💬 New chat message:', { id: messageId, userId });
+        res.json({
+            success: true,
+            message: 'Message saved',
+            messageId: messageId
+        });
 
     } catch (error) {
         console.error('❌ Error processing chat message:', error);
@@ -289,7 +226,7 @@ app.post('/api/chat/message', (req, res) => {
 // ==================================================
 // STUDENT FEEDBACK SUBMISSION
 // ==================================================
-app.post('/api/feedback', (req, res) => {
+app.post('/api/feedback', async (req, res) => {
     try {
         const {
             studentName,
@@ -319,44 +256,29 @@ app.post('/api/feedback', (req, res) => {
             });
         }
 
-        // Create feedback object
-        const feedback = {
-            id: Date.now().toString(),
-            studentName,
-            studentEmail,
-            courseCompleted,
-            currentRole: currentRole || '',
-            ratings: {
-                overall: parseInt(overallRating),
-                instructor: parseInt(instructorRating),
-                content: parseInt(contentRating)
-            },
-            feedbackText,
-            improvements: improvements || '',
-            displayPublicly: displayPublicly === true,
-            timestamp: new Date().toISOString(),
-            status: 'approved' // Auto-approve for now, can add moderation later
-        };
+        // Insert feedback
+        const result = await sql`
+            INSERT INTO feedback (
+                student_name, student_email, course_completed, student_role,
+                overall_rating, instructor_rating, content_rating,
+                feedback_text, improvements, display_publicly, status
+            )
+            VALUES (
+                ${studentName}, ${studentEmail}, ${courseCompleted}, ${currentRole || ''},
+                ${parseInt(overallRating)}, ${parseInt(instructorRating)}, ${parseInt(contentRating)},
+                ${feedbackText}, ${improvements || ''}, ${displayPublicly === true}, 'approved'
+            )
+            RETURNING id
+        `;
 
-        // Read existing feedback
-        const feedbackList = readData(feedbackFile);
+        const feedbackId = result[0].id;
 
-        // Add new feedback
-        feedbackList.push(feedback);
-
-        // Save to file
-        const saved = writeData(feedbackFile, feedbackList);
-
-        if (saved) {
-            console.log('⭐ New student feedback received:', feedback);
-            res.json({
-                success: true,
-                message: 'Thank you for your feedback!',
-                feedbackId: feedback.id
-            });
-        } else {
-            throw new Error('Failed to save feedback');
-        }
+        console.log('⭐ New student feedback received:', { id: feedbackId, name: studentName });
+        res.json({
+            success: true,
+            message: 'Thank you for your feedback!',
+            feedbackId: feedbackId
+        });
 
     } catch (error) {
         console.error('❌ Error processing feedback:', error);
@@ -370,23 +292,17 @@ app.post('/api/feedback', (req, res) => {
 // ==================================================
 // GET PUBLIC TESTIMONIALS (for display on website)
 // ==================================================
-app.get('/api/testimonials', (req, res) => {
+app.get('/api/testimonials', async (req, res) => {
     try {
-        const feedbackList = readData(feedbackFile);
-
-        // Filter only approved feedback marked for public display
-        const testimonials = feedbackList
-            .filter(f => f.displayPublicly && f.status === 'approved')
-            .map(f => ({
-                id: f.id,
-                name: f.studentName,
-                course: f.courseCompleted,
-                role: f.currentRole,
-                rating: f.ratings.overall,
-                text: f.feedbackText,
-                timestamp: f.timestamp
-            }))
-            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        const testimonials = await sql`
+            SELECT
+                id, student_name as name, course_completed as course,
+                student_role as role, overall_rating as rating,
+                feedback_text as text, timestamp
+            FROM feedback
+            WHERE display_publicly = true AND status = 'approved'
+            ORDER BY timestamp DESC
+        `;
 
         res.json({
             success: true,
@@ -407,7 +323,7 @@ app.get('/api/testimonials', (req, res) => {
 // ==================================================
 
 // Upload course material (PDF)
-app.post('/api/materials/upload', upload.single('pdf'), (req, res) => {
+app.post('/api/materials/upload', upload.single('pdf'), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({
@@ -427,43 +343,33 @@ app.post('/api/materials/upload', upload.single('pdf'), (req, res) => {
             });
         }
 
-        // Create material object
-        const material = {
-            id: Date.now().toString(),
-            title,
-            course,
-            description,
-            filename: req.file.filename,
-            originalName: req.file.originalname,
-            fileSize: formatFileSize(req.file.size),
-            filePath: req.file.path,
-            uploadDate: new Date().toISOString()
-        };
+        // Insert material into database
+        const result = await sql`
+            INSERT INTO materials (
+                title, course, description, filename, original_name, file_size, file_path
+            )
+            VALUES (
+                ${title}, ${course}, ${description},
+                ${req.file.filename}, ${req.file.originalname},
+                ${formatFileSize(req.file.size)}, ${req.file.path}
+            )
+            RETURNING id
+        `;
 
-        // Read existing materials
-        const materials = readData(materialsFile);
+        const materialId = result[0].id;
 
-        // Add new material
-        materials.push(material);
-
-        // Save to file
-        const saved = writeData(materialsFile, materials);
-
-        if (saved) {
-            console.log('📄 New course material uploaded:', material);
-            res.json({
-                success: true,
-                message: 'Material uploaded successfully!',
-                materialId: material.id
-            });
-        } else {
-            // Delete uploaded file if save fails
-            fs.unlinkSync(req.file.path);
-            throw new Error('Failed to save material');
-        }
+        console.log('📄 New course material uploaded:', { id: materialId, title });
+        res.json({
+            success: true,
+            message: 'Material uploaded successfully!',
+            materialId: materialId
+        });
 
     } catch (error) {
         console.error('❌ Error uploading material:', error);
+        if (req.file) {
+            fs.unlinkSync(req.file.path);
+        }
         res.status(500).json({
             success: false,
             message: 'An error occurred while uploading the material.'
@@ -472,22 +378,20 @@ app.post('/api/materials/upload', upload.single('pdf'), (req, res) => {
 });
 
 // Get all course materials
-app.get('/api/materials', (req, res) => {
+app.get('/api/materials', async (req, res) => {
     try {
-        const materials = readData(materialsFile);
+        const materials = await sql`
+            SELECT
+                id, title, course, description,
+                original_name as filename, file_size, upload_date
+            FROM materials
+            ORDER BY upload_date DESC
+        `;
 
         res.json({
             success: true,
             count: materials.length,
-            data: materials.map(m => ({
-                id: m.id,
-                title: m.title,
-                course: m.course,
-                description: m.description,
-                filename: m.originalName,
-                fileSize: m.fileSize,
-                uploadDate: m.uploadDate
-            }))
+            data: materials
         });
     } catch (error) {
         console.error('❌ Error fetching materials:', error);
@@ -499,27 +403,30 @@ app.get('/api/materials', (req, res) => {
 });
 
 // Download material
-app.get('/api/materials/download/:id', (req, res) => {
+app.get('/api/materials/download/:id', async (req, res) => {
     try {
-        const materials = readData(materialsFile);
-        const material = materials.find(m => m.id === req.params.id);
+        const materials = await sql`
+            SELECT * FROM materials WHERE id = ${parseInt(req.params.id)}
+        `;
 
-        if (!material) {
+        if (materials.length === 0) {
             return res.status(404).json({
                 success: false,
                 message: 'Material not found'
             });
         }
 
+        const material = materials[0];
+
         // Check if file exists
-        if (!fs.existsSync(material.filePath)) {
+        if (!fs.existsSync(material.file_path)) {
             return res.status(404).json({
                 success: false,
                 message: 'File not found on server'
             });
         }
 
-        res.download(material.filePath, material.originalName);
+        res.download(material.file_path, material.original_name);
     } catch (error) {
         console.error('❌ Error downloading material:', error);
         res.status(500).json({
@@ -530,20 +437,23 @@ app.get('/api/materials/download/:id', (req, res) => {
 });
 
 // View material (inline)
-app.get('/api/materials/view/:id', (req, res) => {
+app.get('/api/materials/view/:id', async (req, res) => {
     try {
-        const materials = readData(materialsFile);
-        const material = materials.find(m => m.id === req.params.id);
+        const materials = await sql`
+            SELECT * FROM materials WHERE id = ${parseInt(req.params.id)}
+        `;
 
-        if (!material) {
+        if (materials.length === 0) {
             return res.status(404).json({
                 success: false,
                 message: 'Material not found'
             });
         }
 
+        const material = materials[0];
+
         // Check if file exists
-        if (!fs.existsSync(material.filePath)) {
+        if (!fs.existsSync(material.file_path)) {
             return res.status(404).json({
                 success: false,
                 message: 'File not found on server'
@@ -551,8 +461,8 @@ app.get('/api/materials/view/:id', (req, res) => {
         }
 
         res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `inline; filename="${material.originalName}"`);
-        fs.createReadStream(material.filePath).pipe(res);
+        res.setHeader('Content-Disposition', `inline; filename="${material.original_name}"`);
+        fs.createReadStream(material.file_path).pipe(res);
     } catch (error) {
         console.error('❌ Error viewing material:', error);
         res.status(500).json({
@@ -563,40 +473,36 @@ app.get('/api/materials/view/:id', (req, res) => {
 });
 
 // Delete material
-app.delete('/api/materials/:id', (req, res) => {
+app.delete('/api/materials/:id', async (req, res) => {
     try {
-        const materials = readData(materialsFile);
-        const materialIndex = materials.findIndex(m => m.id === req.params.id);
+        const materials = await sql`
+            SELECT * FROM materials WHERE id = ${parseInt(req.params.id)}
+        `;
 
-        if (materialIndex === -1) {
+        if (materials.length === 0) {
             return res.status(404).json({
                 success: false,
                 message: 'Material not found'
             });
         }
 
-        const material = materials[materialIndex];
+        const material = materials[0];
 
         // Delete file from disk
-        if (fs.existsSync(material.filePath)) {
-            fs.unlinkSync(material.filePath);
+        if (fs.existsSync(material.file_path)) {
+            fs.unlinkSync(material.file_path);
         }
 
-        // Remove from array
-        materials.splice(materialIndex, 1);
+        // Delete from database
+        await sql`
+            DELETE FROM materials WHERE id = ${parseInt(req.params.id)}
+        `;
 
-        // Save updated list
-        const saved = writeData(materialsFile, materials);
-
-        if (saved) {
-            console.log('🗑️  Material deleted:', material.title);
-            res.json({
-                success: true,
-                message: 'Material deleted successfully'
-            });
-        } else {
-            throw new Error('Failed to save updated materials list');
-        }
+        console.log('🗑️  Material deleted:', material.title);
+        res.json({
+            success: true,
+            message: 'Material deleted successfully'
+        });
 
     } catch (error) {
         console.error('❌ Error deleting material:', error);
@@ -607,21 +513,14 @@ app.delete('/api/materials/:id', (req, res) => {
     }
 });
 
-// Helper function to format file size
-function formatFileSize(bytes) {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-}
-
 // ==================================================
-// GET ALL SUBMISSIONS (Admin endpoint - should be protected in production)
+// ADMIN ENDPOINTS
 // ==================================================
-app.get('/api/admin/contacts', (req, res) => {
+app.get('/api/admin/contacts', async (req, res) => {
     try {
-        const contacts = readData(contactsFile);
+        const contacts = await sql`
+            SELECT * FROM contacts ORDER BY timestamp DESC
+        `;
         res.json({
             success: true,
             count: contacts.length,
@@ -635,9 +534,11 @@ app.get('/api/admin/contacts', (req, res) => {
     }
 });
 
-app.get('/api/admin/chat-users', (req, res) => {
+app.get('/api/admin/chat-users', async (req, res) => {
     try {
-        const users = readData(chatUsersFile);
+        const users = await sql`
+            SELECT * FROM chat_users ORDER BY timestamp DESC
+        `;
         res.json({
             success: true,
             count: users.length,
@@ -651,9 +552,11 @@ app.get('/api/admin/chat-users', (req, res) => {
     }
 });
 
-app.get('/api/admin/chat-messages', (req, res) => {
+app.get('/api/admin/chat-messages', async (req, res) => {
     try {
-        const messages = readData(chatMessagesFile);
+        const messages = await sql`
+            SELECT * FROM chat_messages ORDER BY timestamp DESC
+        `;
         res.json({
             success: true,
             count: messages.length,
@@ -667,9 +570,11 @@ app.get('/api/admin/chat-messages', (req, res) => {
     }
 });
 
-app.get('/api/admin/feedback', (req, res) => {
+app.get('/api/admin/feedback', async (req, res) => {
     try {
-        const feedbackList = readData(feedbackFile);
+        const feedbackList = await sql`
+            SELECT * FROM feedback ORDER BY timestamp DESC
+        `;
         res.json({
             success: true,
             count: feedbackList.length,
@@ -686,9 +591,11 @@ app.get('/api/admin/feedback', (req, res) => {
 // ==================================================
 // EXPORT DATA AS CSV (Admin endpoint)
 // ==================================================
-app.get('/api/admin/export/contacts', (req, res) => {
+app.get('/api/admin/export/contacts', async (req, res) => {
     try {
-        const contacts = readData(contactsFile);
+        const contacts = await sql`
+            SELECT * FROM contacts ORDER BY timestamp DESC
+        `;
 
         // Convert to CSV
         const headers = 'ID,Name,Email,Phone,Course,Message,Timestamp,Status\n';
@@ -717,6 +624,7 @@ app.listen(PORT, () => {
     console.log('🚀 SHASHANK SAP TRAINING - BACKEND SERVER');
     console.log('='.repeat(50));
     console.log(`✅ Server running on: http://localhost:${PORT}`);
+    console.log(`🗄️  Database: Neon PostgreSQL (Connected)`);
     console.log(`📊 API Health Check: http://localhost:${PORT}/api/health`);
     console.log(`📝 Contact Form API: http://localhost:${PORT}/api/contact`);
     console.log(`💬 Chat Signup API: http://localhost:${PORT}/api/chat/signup`);

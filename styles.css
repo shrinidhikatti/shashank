@@ -610,6 +610,7 @@ body {
 .hero-visual {
     position: relative;
     height: 500px;
+    overflow: hidden;
 }
 
 .floating-card {
@@ -621,6 +622,12 @@ body {
     gap: 1rem;
     min-width: 200px;
     animation: floatCard 3s ease-in-out infinite;
+    z-index: 1;
+}
+
+/* Ensure floating cards only appear in hero section */
+section:not(.hero) .floating-card {
+    display: none !important;
 }
 
 .floating-card.card-1 {
@@ -764,8 +771,31 @@ section:not(.hero):not(.cta) p {
 
 .features-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 2rem;
+    justify-items: center;
+}
+
+.features-grid .feature-card:nth-child(4),
+.features-grid .feature-card:nth-child(5) {
+    max-width: 450px;
+}
+
+@media (max-width: 1024px) {
+    .features-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .features-grid .feature-card:nth-child(4),
+    .features-grid .feature-card:nth-child(5) {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .features-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 .feature-card {
@@ -1117,7 +1147,7 @@ section:not(.hero):not(.cta) p {
 
 .contact-info {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat( minmax(200px, 1fr));
     gap: 1.5rem;
 }
 
@@ -1133,9 +1163,9 @@ section:not(.hero):not(.cta) p {
 }
 
 .contact-icon {
-    width: 60px;
-    height: 60px;
-    margin: 0 auto 1rem;
+    width: 45px;
+    height: 45px;
+    margin: 0 auto 0.5rem;
     border-radius: var(--radius-md);
     display: flex;
     align-items: center;
@@ -1143,8 +1173,8 @@ section:not(.hero):not(.cta) p {
 }
 
 .contact-icon svg {
-    width: 28px;
-    height: 28px;
+    width: 22px;
+    height: 22px;
     color: white;
 }
 
@@ -1156,7 +1186,7 @@ section:not(.hero):not(.cta) p {
 
 .contact-card p {
     color: var(--text-secondary);
-    font-size: 0.95rem;
+    font-size: 1rem;
 }
 
 .contact-form-wrapper {

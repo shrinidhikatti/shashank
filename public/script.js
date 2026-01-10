@@ -4,9 +4,39 @@
 // ==================================================
 
 // ==================================================
-// DARK MODE TOGGLE
+// SCROLL TO COURSE FUNCTION
 // ==================================================
-const themeToggle = document.getElementById('themeToggle');
+function scrollToCourse(courseId) {
+    // Scroll to courses section
+    const coursesSection = document.getElementById('courses');
+    if (coursesSection) {
+        coursesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        // Find and highlight the specific course after scrolling
+        setTimeout(() => {
+            const courseCards = document.querySelectorAll('.course-card');
+            courseCards.forEach(card => {
+                const courseTitle = card.querySelector('.course-title');
+                if (courseTitle && courseTitle.textContent.toLowerCase().includes(courseId)) {
+                    // Add highlight effect
+                    card.style.transform = 'scale(1.05)';
+                    card.style.boxShadow = '0 20px 60px rgba(102, 126, 234, 0.5)';
+                    card.style.transition = 'all 0.3s ease';
+
+                    // Remove highlight after 2 seconds
+                    setTimeout(() => {
+                        card.style.transform = '';
+                        card.style.boxShadow = '';
+                    }, 2000);
+                }
+            });
+        }, 800);
+    }
+}
+
+// ==================================================
+// AUTO DARK MODE (SYSTEM PREFERENCE)
+// ==================================================
 const html = document.documentElement;
 
 // Function to get system preference
@@ -14,25 +44,13 @@ function getSystemTheme() {
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
-// Check for saved theme preference or use system preference
-const currentTheme = localStorage.getItem('theme') || getSystemTheme();
-html.setAttribute('data-theme', currentTheme);
+// Set theme based on system preference
+html.setAttribute('data-theme', getSystemTheme());
 
-// Listen for system theme changes
+// Listen for system theme changes and update automatically
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-    // Only update if user hasn't manually set a preference
-    if (!localStorage.getItem('theme')) {
-        const newTheme = e.matches ? 'dark' : 'light';
-        html.setAttribute('data-theme', newTheme);
-    }
-});
-
-themeToggle.addEventListener('click', () => {
-    const theme = html.getAttribute('data-theme');
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-
+    const newTheme = e.matches ? 'dark' : 'light';
     html.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
 });
 
 // ==================================================
@@ -132,12 +150,48 @@ const contactForm = document.getElementById('contactForm');
 contactForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
+    const nameInput = document.getElementById('name').value.trim();
+    const emailInput = document.getElementById('email').value.trim();
+    const phoneInput = document.getElementById('phone').value.trim();
+    const courseInput = document.getElementById('course').value;
+    const messageInput = document.getElementById('message').value.trim();
+
+    // Validation
+    if (!nameInput) {
+        showNotification('Please enter your name', 'error');
+        return;
+    }
+
+    if (!emailInput) {
+        showNotification('Please enter your email address', 'error');
+        return;
+    }
+
+    // Email validation regex
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailInput)) {
+        showNotification('Please enter a valid email address', 'error');
+        return;
+    }
+
+    if (!phoneInput) {
+        showNotification('Please enter your phone number', 'error');
+        return;
+    }
+
+    // Phone validation (10 digits)
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!phoneRegex.test(phoneInput.replace(/[\s\-\(\)]/g, ''))) {
+        showNotification('Please enter a valid 10-digit phone number', 'error');
+        return;
+    }
+
     const formData = {
-        name: document.getElementById('name').value,
-        email: document.getElementById('email').value,
-        phone: document.getElementById('phone').value,
-        course: document.getElementById('course').value,
-        message: document.getElementById('message').value
+        name: nameInput,
+        email: emailInput,
+        phone: phoneInput,
+        course: courseInput,
+        message: messageInput
     };
 
     console.log('Contact Form Submitted:', formData);
@@ -339,17 +393,17 @@ function generateBotResponse(userMessage) {
 
     // Course related queries
     if (message.includes('course') || message.includes('training') || message.includes('learn')) {
-        return `We offer comprehensive SAP training in:\n\n🔹 SAP S/4 HANA\n🔹 SAP FICO\n🔹 SAP ABAP\n🔹 SAP MM\n🔹 SAP SD\n🔹 SAP Fiori\n🔹 SAP HANA\n🔹 And more!\n\nWhich course interests you?`;
+        return `We offer comprehensive SAP training in:\n\n🔹 SAP EWM\n🔹 SAP MM\n🔹 SAP ABAP\n🔹 SAP MM\n🔹 SAP SD\n🔹 SAP Fiori\n🔹 SAP HANA\n🔹 And more!\n\nWhich course interests you?`;
     }
 
-    // S/4 HANA specific
+    // EWM specific
     if (message.includes('s/4') || message.includes('s4') || message.includes('hana')) {
-        return `SAP S/4 HANA is our most trending course! 🔥\n\n✅ Latest SAP Technology\n✅ Real-time Data Processing\n✅ Fiori UX Integration\n✅ Migration Strategies\n✅ Hands-on Projects\n\nDuration: 60 Days\n\nWould you like to know about fees or schedule a demo?`;
+        return `SAP EWM is our most trending course! 🔥\n\n✅ Latest SAP Technology\n✅ Real-time Data Processing\n✅ Fiori UX Integration\n✅ Migration Strategies\n✅ Hands-on Projects\n\nDuration: 60 Days\n\nWould you like to know about fees or schedule a demo?`;
     }
 
-    // FICO specific
-    if (message.includes('fico') || message.includes('finance') || message.includes('accounting')) {
-        return `SAP FICO is perfect for finance professionals! ⭐\n\n✅ Financial Accounting (FI)\n✅ Controlling (CO)\n✅ Asset Accounting\n✅ End-to-End Implementation\n\nDuration: 45 Days\n\nInterested in enrollment or a free demo?`;
+    // MM specific
+    if (message.includes('mm') || message.includes('finance') || message.includes('accounting')) {
+        return `SAP MM is perfect for finance professionals! ⭐\n\n✅ Financial Accounting (FI)\n✅ Controlling (CO)\n✅ Asset Accounting\n✅ End-to-End Implementation\n\nDuration: 45 Days\n\nInterested in enrollment or a free demo?`;
     }
 
     // Fee related queries
@@ -545,7 +599,7 @@ document.querySelectorAll('input[type="tel"]').forEach(input => {
 // ==================================================
 async function loadTestimonials() {
     try {
-        const response = await fetch('http://localhost:3000/api/testimonials');
+        const response = await fetch('/api/success-stories');
         const result = await response.json();
 
         if (result.success && result.data.length > 0) {
@@ -554,23 +608,9 @@ async function loadTestimonials() {
             // Clear existing testimonials
             testimonialsGrid.innerHTML = '';
 
-            // Map course codes to readable names
-            const courseNames = {
-                's4hana': 'SAP S/4 HANA',
-                'fico': 'SAP FICO',
-                'abap': 'SAP ABAP',
-                'mm': 'SAP MM',
-                'sd': 'SAP SD',
-                'fiori': 'SAP Fiori',
-                'hana': 'SAP HANA',
-                'other': 'SAP'
-            };
-
-            // Display up to 6 testimonials
-            result.data.slice(0, 6).forEach(testimonial => {
-                const initials = testimonial.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-                const courseName = courseNames[testimonial.course] || testimonial.course;
-                const roleText = testimonial.role ? `${courseName} - ${testimonial.role}` : `${courseName} Consultant`;
+            // Display up to 6 success stories
+            result.data.slice(0, 6).forEach(story => {
+                const initials = story.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
                 const testimonialCard = document.createElement('div');
                 testimonialCard.className = 'testimonial-card glass-effect';
@@ -580,15 +620,15 @@ async function loadTestimonials() {
                             <div class="avatar-gradient">${initials}</div>
                         </div>
                         <div class="testimonial-author">
-                            <h4>${escapeHtml(testimonial.name)}</h4>
-                            <p>${escapeHtml(roleText)}</p>
+                            <h4>${escapeHtml(story.name)}</h4>
+                            <p>${escapeHtml(story.role)}</p>
                         </div>
                     </div>
                     <div class="testimonial-rating">
-                        ${'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>'.repeat(testimonial.rating)}
+                        ${'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>'.repeat(story.rating)}
                     </div>
                     <p class="testimonial-text">
-                        "${escapeHtml(testimonial.text)}"
+                        "${escapeHtml(story.text)}"
                     </p>
                 `;
 

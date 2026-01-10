@@ -108,6 +108,7 @@ body {
     height: 100%;
     z-index: -1;
     overflow: hidden;
+    display: none; /* Hide purple background animations */
 }
 
 .gradient-bg {
@@ -469,6 +470,7 @@ body {
     align-items: center;
     padding: 8rem 0 4rem;
     position: relative;
+    background: var(--bg-primary);
 }
 
 .hero .container {
@@ -483,25 +485,23 @@ body {
     align-items: center;
     gap: 0.5rem;
     padding: 0.6rem 1.2rem;
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--bg-glass);
     backdrop-filter: blur(10px);
     border-radius: var(--radius-full);
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    border: 2px solid var(--border-color);
     margin-bottom: 1.5rem;
     animation: fadeInUp 0.6s ease;
-    box-shadow: 0 4px 20px rgba(255, 255, 255, 0.2);
+    box-shadow: var(--shadow-md);
 }
 
 .badge-icon {
     font-size: 1.3rem;
-    filter: drop-shadow(0 2px 8px rgba(255, 255, 255, 0.5));
 }
 
 .badge-text {
     font-size: 0.9rem;
     font-weight: 700;
-    color: #ffffff;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    color: var(--primary);
 }
 
 .hero-title {
@@ -510,37 +510,32 @@ body {
     line-height: 1.1;
     margin-bottom: 1.5rem;
     animation: fadeInUp 0.8s ease;
-    color: #ffffff;
+    color: var(--text-primary);
     letter-spacing: -0.02em;
-    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
 }
 
 .gradient-text {
-    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 30%, #ef4444 60%, #ec4899 100%);
+    background: var(--gradient-primary);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     display: inline-block;
     font-weight: 900;
     position: relative;
-    filter: drop-shadow(0 2px 10px rgba(251, 191, 36, 0.5));
 }
 
 .hero-description {
     font-size: 1.25rem;
-    color: #ffffff;
+    color: var(--text-secondary);
     line-height: 1.8;
     margin-bottom: 2rem;
     animation: fadeInUp 1s ease;
     font-weight: 500;
-    text-shadow: 0 2px 15px rgba(0, 0, 0, 0.4);
-    opacity: 0.95;
 }
 
 /* Dark mode specific overrides for better visibility */
 [data-theme="dark"] .hero-title {
     color: #ffffff;
-    text-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
 }
 
 [data-theme="dark"] .gradient-text {
@@ -548,12 +543,10 @@ body {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    text-shadow: none;
 }
 
 [data-theme="dark"] .hero-description {
     color: #e2e8f0;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
 [data-theme="dark"] .badge-text {
@@ -573,12 +566,12 @@ body {
     align-items: center;
     gap: 2rem;
     padding: 2rem;
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--bg-glass);
     backdrop-filter: blur(20px);
     border-radius: var(--radius-lg);
-    border: 2px solid rgba(255, 255, 255, 0.25);
+    border: 1px solid var(--border-color);
     animation: fadeInUp 1.4s ease;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow-lg);
 }
 
 .stat-item {
@@ -588,23 +581,30 @@ body {
 .stat-number {
     font-size: 2.5rem;
     font-weight: 900;
-    color: #ffffff;
+    color: var(--primary);
     line-height: 1;
     margin-bottom: 0.5rem;
-    text-shadow: 0 2px 15px rgba(255, 255, 255, 0.3), 0 0 30px rgba(255, 255, 255, 0.2);
 }
 
 .stat-label {
     font-size: 0.95rem;
-    color: #e2e8f0;
+    color: var(--text-secondary);
     font-weight: 600;
-    text-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
 }
 
 .stat-divider {
     width: 2px;
     height: 40px;
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--border-color);
+}
+
+/* Dark mode overrides for hero stats */
+[data-theme="dark"] .stat-number {
+    color: #a78bfa;
+}
+
+[data-theme="dark"] .stat-label {
+    color: #e2e8f0;
 }
 
 .hero-visual {
@@ -719,6 +719,7 @@ section {
     font-weight: 800;
     margin-bottom: 1rem;
     line-height: 1.2;
+    color: var(--text-primary);
 }
 
 .section-description {
@@ -727,7 +728,40 @@ section {
     line-height: 1.8;
 }
 
+/* Ensure text is visible on white background sections */
+section:not(.hero):not(.cta) {
+    color: var(--text-primary);
+}
+
+section:not(.hero):not(.cta) h1,
+section:not(.hero):not(.cta) h2,
+section:not(.hero):not(.cta) h3,
+section:not(.hero):not(.cta) h4,
+section:not(.hero):not(.cta) h5,
+section:not(.hero):not(.cta) h6 {
+    color: var(--text-primary);
+}
+
+section:not(.hero):not(.cta) p {
+    color: var(--text-secondary);
+}
+
 /* ========== Features Section ========== */
+.features {
+    color: var(--text-primary);
+}
+
+.features h1,
+.features h2,
+.features h3,
+.features h4 {
+    color: var(--text-primary);
+}
+
+.features p {
+    color: var(--text-secondary);
+}
+
 .features-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -777,6 +811,19 @@ section {
 /* ========== Courses Section ========== */
 .courses {
     background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.courses h1,
+.courses h2,
+.courses h3,
+.courses h4 {
+    color: var(--text-primary);
+}
+
+.courses p,
+.courses li {
+    color: var(--text-secondary);
 }
 
 .courses-grid {
@@ -907,6 +954,21 @@ section {
 }
 
 /* ========== Testimonials Section ========== */
+.testimonials {
+    color: var(--text-primary);
+}
+
+.testimonials h1,
+.testimonials h2,
+.testimonials h3,
+.testimonials h4 {
+    color: var(--text-primary);
+}
+
+.testimonials p {
+    color: var(--text-secondary);
+}
+
 .testimonials-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -1032,6 +1094,21 @@ section {
 }
 
 /* ========== Contact Section ========== */
+#contact {
+    color: var(--text-primary);
+}
+
+#contact h1,
+#contact h2,
+#contact h3,
+#contact h4 {
+    color: var(--text-primary);
+}
+
+#contact p {
+    color: var(--text-secondary);
+}
+
 .contact-wrapper {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -1229,6 +1306,35 @@ section {
 .footer-links a {
     color: var(--text-muted);
     font-size: 0.875rem;
+}
+
+/* ========== WhatsApp Button ========== */
+.whatsapp-button {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 1000;
+    width: 60px;
+    height: 60px;
+    border-radius: var(--radius-full);
+    background: #25D366;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 30px rgba(37, 211, 102, 0.4);
+    transition: var(--transition-base);
+    text-decoration: none;
+}
+
+.whatsapp-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 12px 40px rgba(37, 211, 102, 0.6);
+}
+
+.whatsapp-button svg {
+    width: 32px;
+    height: 32px;
 }
 
 /* ========== Chat Widget ========== */

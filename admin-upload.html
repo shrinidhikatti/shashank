@@ -293,61 +293,124 @@
     <div id="uploadSection" class="upload-page" style="display: none;">
         <div class="upload-container">
             <div class="upload-header">
-                <h1>Upload Course Materials</h1>
-                <p>Upload PDF documents for students to access</p>
+                <h1>Admin Panel</h1>
+                <p>Manage course materials and success stories</p>
                 <button onclick="logout()" class="btn-logout" style="margin-top: 15px; padding: 10px 20px; background: #e00; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Logout</button>
             </div>
 
-            <div class="upload-form-wrapper glass-effect">
-                <form id="uploadForm">
-                    <div class="form-group">
-                        <label for="materialTitle">Material Title *</label>
-                        <input type="text" id="materialTitle" placeholder="e.g., SAP FICO Module Overview" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="materialCourse">Course *</label>
-                        <select id="materialCourse" required>
-                            <option value="">Select Course</option>
-                            <option value="s4hana">SAP S/4 HANA</option>
-                            <option value="fico">SAP FICO</option>
-                            <option value="abap">SAP ABAP</option>
-                            <option value="mm">SAP MM</option>
-                            <option value="sd">SAP SD</option>
-                            <option value="fiori">SAP Fiori</option>
-                            <option value="hana">SAP HANA</option>
-                            <option value="other">Other</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="materialDesc">Description *</label>
-                        <textarea id="materialDesc" rows="3" placeholder="Brief description of the material..." required></textarea>
-                    </div>
-
-                    <div class="file-upload-area" id="uploadArea">
-                        <div class="file-icon">📄</div>
-                        <h3>Drop PDF file here or click to browse</h3>
-                        <p>Maximum file size: 10MB</p>
-                        <input type="file" id="fileInput" accept=".pdf" required>
-                    </div>
-
-                    <div id="fileInfo" class="file-info"></div>
-
-                    <button type="submit" class="btn btn-large btn-gradient" style="width: 100%;">
-                        <span>Upload Material</span>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                            <polyline points="17 8 12 3 7 8"/>
-                            <line x1="12" y1="3" x2="12" y2="15"/>
-                        </svg>
-                    </button>
-                </form>
+            <!-- Tab Navigation -->
+            <div style="display: flex; gap: 10px; margin-bottom: 30px; justify-content: center;">
+                <button onclick="switchTab('materials')" id="materialsTab" class="tab-btn active-tab" style="padding: 12px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 30px; cursor: pointer; font-weight: 600; transition: all 0.3s ease;">Course Materials</button>
+                <button onclick="switchTab('stories')" id="storiesTab" class="tab-btn" style="padding: 12px 30px; background: rgba(102, 126, 234, 0.2); color: #667eea; border: 2px solid #667eea; border-radius: 30px; cursor: pointer; font-weight: 600; transition: all 0.3s ease;">Success Stories</button>
             </div>
 
-            <div class="uploaded-files">
-                <h2>Uploaded Materials</h2>
-                <div id="filesList"></div>
+            <!-- Materials Tab Content -->
+            <div id="materialsContent" class="tab-content">
+                <div class="upload-form-wrapper glass-effect">
+                    <form id="uploadForm">
+                        <div class="form-group">
+                            <label for="materialTitle">Material Title *</label>
+                            <input type="text" id="materialTitle" placeholder="e.g., SAP MM Module Overview" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="materialCourse">Course *</label>
+                            <select id="materialCourse" required>
+                                <option value="">Select Course</option>
+                                <option value="ewm">SAP EWM</option>
+                                <option value="mm">SAP MM</option>
+                                <option value="abap">SAP ABAP</option>
+                                <option value="sd">SAP SD</option>
+                                <option value="fiori">SAP Fiori</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="materialDesc">Description *</label>
+                            <textarea id="materialDesc" rows="3" placeholder="Brief description of the material..." required></textarea>
+                        </div>
+
+                        <div class="file-upload-area" id="uploadArea">
+                            <div class="file-icon">📄</div>
+                            <h3>Drop PDF file here or click to browse</h3>
+                            <p>Maximum file size: 10MB</p>
+                            <input type="file" id="fileInput" accept=".pdf" required>
+                        </div>
+
+                        <div id="fileInfo" class="file-info"></div>
+
+                        <button type="submit" class="btn btn-large btn-gradient" style="width: 100%;">
+                            <span>Upload Material</span>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="17 8 12 3 7 8"/>
+                                <line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                        </button>
+                    </form>
+                </div>
+
+                <div class="uploaded-files">
+                    <h2>Uploaded Materials</h2>
+                    <div id="filesList"></div>
+                </div>
+            </div>
+
+            <!-- Success Stories Tab Content -->
+            <div id="storiesContent" class="tab-content" style="display: none;">
+                <div class="upload-form-wrapper glass-effect">
+                    <form id="storyForm">
+                        <div class="form-group">
+                            <label for="studentName">Student Name *</label>
+                            <input type="text" id="studentName" placeholder="e.g., John Doe" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="studentRole">Current Role *</label>
+                            <input type="text" id="studentRole" placeholder="e.g., SAP MM Consultant" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="courseCompleted">Course Completed *</label>
+                            <select id="courseCompleted" required>
+                                <option value="">Select Course</option>
+                                <option value="SAP EWM">SAP EWM</option>
+                                <option value="SAP MM">SAP MM</option>
+                                <option value="SAP ABAP">SAP ABAP</option>
+                                <option value="SAP SD">SAP SD</option>
+                                <option value="SAP Fiori">SAP Fiori</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="rating">Rating *</label>
+                            <select id="rating" required>
+                                <option value="">Select Rating</option>
+                                <option value="5">⭐⭐⭐⭐⭐ (5 stars)</option>
+                                <option value="4">⭐⭐⭐⭐ (4 stars)</option>
+                                <option value="3">⭐⭐⭐ (3 stars)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="testimonialText">Success Story / Testimonial *</label>
+                            <textarea id="testimonialText" rows="5" placeholder="Share the student's success story..." required></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-large btn-gradient" style="width: 100%;">
+                            <span>Add Success Story</span>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 5v14M5 12h14"/>
+                            </svg>
+                        </button>
+                    </form>
+                </div>
+
+                <div class="uploaded-files">
+                    <h2>Published Success Stories</h2>
+                    <div id="storiesList"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -542,6 +605,123 @@
             uploadSection.style.display = 'none';
             loginForm.reset();
             loginError.style.display = 'none';
+        }
+
+        // Tab switching function
+        function switchTab(tab) {
+            const materialsTab = document.getElementById('materialsTab');
+            const storiesTab = document.getElementById('storiesTab');
+            const materialsContent = document.getElementById('materialsContent');
+            const storiesContent = document.getElementById('storiesContent');
+
+            if (tab === 'materials') {
+                materialsTab.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                materialsTab.style.color = 'white';
+                materialsTab.style.border = 'none';
+                storiesTab.style.background = 'rgba(102, 126, 234, 0.2)';
+                storiesTab.style.color = '#667eea';
+                storiesTab.style.border = '2px solid #667eea';
+                materialsContent.style.display = 'block';
+                storiesContent.style.display = 'none';
+            } else {
+                storiesTab.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                storiesTab.style.color = 'white';
+                storiesTab.style.border = 'none';
+                materialsTab.style.background = 'rgba(102, 126, 234, 0.2)';
+                materialsTab.style.color = '#667eea';
+                materialsTab.style.border = '2px solid #667eea';
+                materialsContent.style.display = 'none';
+                storiesContent.style.display = 'block';
+                loadSuccessStories();
+            }
+        }
+
+        // Success Stories Form Submission
+        const storyForm = document.getElementById('storyForm');
+        storyForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const storyData = {
+                name: document.getElementById('studentName').value,
+                role: document.getElementById('studentRole').value,
+                course: document.getElementById('courseCompleted').value,
+                rating: parseInt(document.getElementById('rating').value),
+                text: document.getElementById('testimonialText').value
+            };
+
+            try {
+                const response = await fetch('/api/success-stories', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(storyData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('Success story added successfully!');
+                    storyForm.reset();
+                    loadSuccessStories();
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error adding success story:', error);
+                alert('Error adding success story. Please try again.');
+            }
+        });
+
+        // Load success stories
+        async function loadSuccessStories() {
+            try {
+                const response = await fetch('/api/success-stories');
+                const result = await response.json();
+
+                if (result.success) {
+                    const storiesList = document.getElementById('storiesList');
+                    if (result.data.length === 0) {
+                        storiesList.innerHTML = '<p style="text-align: center; color: #888;">No success stories yet.</p>';
+                    } else {
+                        storiesList.innerHTML = result.data.map(story => `
+                            <div class="file-item glass-effect">
+                                <div>
+                                    <strong>${story.name}</strong> - ${story.role}<br>
+                                    <small>${story.course} • ${'⭐'.repeat(story.rating)}</small><br>
+                                    <small style="opacity: 0.7;">${story.text.substring(0, 100)}${story.text.length > 100 ? '...' : ''}</small>
+                                </div>
+                                <button class="btn-delete" onclick="deleteStory('${story.id}')">Delete</button>
+                            </div>
+                        `).join('');
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading success stories:', error);
+            }
+        }
+
+        // Delete success story
+        async function deleteStory(id) {
+            if (!confirm('Are you sure you want to delete this success story?')) return;
+
+            try {
+                const response = await fetch(`/api/success-stories/${id}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('Success story deleted successfully!');
+                    loadSuccessStories();
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error deleting success story:', error);
+                alert('Error deleting success story. Please try again.');
+            }
         }
     </script>
 </body>

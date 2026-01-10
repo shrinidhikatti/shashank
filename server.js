@@ -517,6 +517,95 @@ app.delete('/api/materials/:id', async (req, res) => {
 });
 
 // ==================================================
+// SUCCESS STORIES / TESTIMONIALS MANAGEMENT
+// ==================================================
+
+// Add success story (Admin only)
+app.post('/api/success-stories', async (req, res) => {
+    try {
+        const { name, role, course, rating, text } = req.body;
+
+        // Validation
+        if (!name || !role || !course || !rating || !text) {
+            return res.status(400).json({
+                success: false,
+                message: 'All fields are required'
+            });
+        }
+
+        // Insert success story into database
+        const result = await sql`
+            INSERT INTO success_stories (name, role, course, rating, testimonial_text, status)
+            VALUES (${name}, ${role}, ${course}, ${parseInt(rating)}, ${text}, 'approved')
+            RETURNING id
+        `;
+
+        const storyId = result[0].id;
+
+        console.log('✨ New success story added:', { id: storyId, name });
+        res.json({
+            success: true,
+            message: 'Success story added successfully!',
+            storyId: storyId
+        });
+
+    } catch (error) {
+        console.error('❌ Error adding success story:', error);
+        res.status(500).json({
+            success: false,
+            message: 'An error occurred while adding the success story.'
+        });
+    }
+});
+
+// Get all success stories (Public)
+app.get('/api/success-stories', async (req, res) => {
+    try {
+        const stories = await sql`
+            SELECT
+                id, name, role, course, rating, testimonial_text as text, created_at
+            FROM success_stories
+            WHERE status = 'approved'
+            ORDER BY created_at DESC
+        `;
+
+        res.json({
+            success: true,
+            count: stories.length,
+            data: stories
+        });
+    } catch (error) {
+        console.error('❌ Error fetching success stories:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching success stories'
+        });
+    }
+});
+
+// Delete success story
+app.delete('/api/success-stories/:id', async (req, res) => {
+    try {
+        await sql`
+            DELETE FROM success_stories WHERE id = ${parseInt(req.params.id)}
+        `;
+
+        console.log('🗑️  Success story deleted:', req.params.id);
+        res.json({
+            success: true,
+            message: 'Success story deleted successfully'
+        });
+
+    } catch (error) {
+        console.error('❌ Error deleting success story:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error deleting success story'
+        });
+    }
+});
+
+// ==================================================
 // ADMIN ENDPOINTS
 // ==================================================
 

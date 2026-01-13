@@ -645,10 +645,20 @@ async function loadTestimonials() {
                     testimonialCard.style.transform = 'translateY(0)';
                 }, 100);
             });
+        } else {
+            // If no testimonials, hide loading message
+            const testimonialsGrid = document.querySelector('.testimonials-grid');
+            if (testimonialsGrid) {
+                testimonialsGrid.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">No success stories available yet.</p>';
+            }
         }
     } catch (error) {
         console.error('Error loading testimonials:', error);
-        // Keep default testimonials if API fails
+        // Hide loading message on error
+        const testimonialsGrid = document.querySelector('.testimonials-grid');
+        if (testimonialsGrid) {
+            testimonialsGrid.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">Unable to load success stories at the moment.</p>';
+        }
     }
 }
 

@@ -634,7 +634,7 @@ async function loadTestimonials() {
                     <div class="testimonial-rating">
                         ${'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>'.repeat(story.rating)}
                     </div>
-                    ${story.image ? `<div class="testimonial-image" style="margin: 10px 0;"><img src="${story.image}" alt="${escapeHtml(story.name)}" style="width: 100%; max-height: 180px; object-fit: cover; border-radius: 8px; border: 2px solid rgba(102, 126, 234, 0.3);"></div>` : ''}
+                    ${story.image ? `<div class="testimonial-image" style="margin: 10px 0;"><img src="${story.image}" alt="${escapeHtml(story.name)}" onerror="this.parentElement.style.display='none'" style="width: 100%; max-height: 180px; object-fit: cover; border-radius: 8px; border: 2px solid rgba(102, 126, 234, 0.3); display: block;"></div>` : ''}
                     <p class="testimonial-text">
                         "${escapeHtml(story.text)}"
                     </p>

@@ -1030,10 +1030,12 @@ section:not(.hero):not(.cta) p {
     display: flex;
     gap: 1.5rem;
     overflow-x: auto;
+    overflow-y: hidden;
     scroll-behavior: smooth;
     padding-bottom: 1rem;
     scrollbar-width: thin;
     scrollbar-color: var(--primary) var(--bg-glass);
+    flex-wrap: nowrap;
 }
 
 .testimonials-grid::-webkit-scrollbar {

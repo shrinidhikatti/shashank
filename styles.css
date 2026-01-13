@@ -1026,43 +1026,79 @@ section:not(.hero):not(.cta) p {
     color: var(--text-secondary);
 }
 
-.testimonials-grid {
+.testimonials-carousel-wrapper {
+    position: relative;
     display: flex;
-    gap: 1.5rem;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scroll-behavior: smooth;
-    padding-bottom: 1rem;
-    scrollbar-width: thin;
-    scrollbar-color: var(--primary) var(--bg-glass);
-    flex-wrap: nowrap;
+    align-items: center;
+    gap: 1rem;
 }
 
-.testimonials-grid::-webkit-scrollbar {
-    height: 8px;
-}
-
-.testimonials-grid::-webkit-scrollbar-track {
-    background: var(--bg-glass);
-    border-radius: 10px;
-}
-
-.testimonials-grid::-webkit-scrollbar-thumb {
+.carousel-btn {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-full);
     background: var(--gradient-primary);
-    border-radius: 10px;
+    border: none;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    z-index: 10;
 }
 
-.testimonials-grid::-webkit-scrollbar-thumb:hover {
-    background: var(--secondary);
+.carousel-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+.carousel-btn:active {
+    transform: scale(0.95);
+}
+
+.carousel-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: scale(1);
+}
+
+.carousel-btn svg {
+    width: 24px;
+    height: 24px;
+}
+
+.testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    overflow: hidden;
+    flex: 1;
+}
+
+@media (max-width: 1024px) {
+    .testimonials-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .testimonials-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .carousel-btn {
+        width: 40px;
+        height: 40px;
+    }
 }
 
 .testimonial-card {
-    min-width: 280px;
-    max-width: 320px;
     padding: 1.5rem;
     border-radius: var(--radius-lg);
     transition: var(--transition-base);
-    flex-shrink: 0;
 }
 
 .testimonial-card:hover {

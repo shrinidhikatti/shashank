@@ -489,20 +489,34 @@
                 </p>
             </div>
 
-            <div id="testimonials-grid" class="testimonials-grid">
-                <!-- Success stories will be loaded dynamically from the database -->
-                <div class="testimonial-card glass-effect">
-                    <div class="testimonial-header">
-                        <div class="testimonial-avatar">
-                            <div class="avatar-gradient">...</div>
+            <div class="testimonials-carousel-wrapper">
+                <button class="carousel-btn carousel-btn-prev" id="testimonialPrev" aria-label="Previous testimonials">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                </button>
+
+                <div id="testimonials-grid" class="testimonials-grid">
+                    <!-- Success stories will be loaded dynamically from the database -->
+                    <div class="testimonial-card glass-effect">
+                        <div class="testimonial-header">
+                            <div class="testimonial-avatar">
+                                <div class="avatar-gradient">...</div>
+                            </div>
+                            <div class="testimonial-author">
+                                <h4>Loading...</h4>
+                                <p>Please wait</p>
+                            </div>
                         </div>
-                        <div class="testimonial-author">
-                            <h4>Loading...</h4>
-                            <p>Please wait</p>
-                        </div>
+                        <p class="testimonial-text">Loading success stories...</p>
                     </div>
-                    <p class="testimonial-text">Loading success stories...</p>
                 </div>
+
+                <button class="carousel-btn carousel-btn-next" id="testimonialNext" aria-label="Next testimonials">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </button>
             </div>
         </div>
     </section>

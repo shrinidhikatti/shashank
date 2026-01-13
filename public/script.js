@@ -600,8 +600,12 @@ document.querySelectorAll('input[type="tel"]').forEach(input => {
 });
 
 // ==================================================
-// LOAD TESTIMONIALS FROM API
+// TESTIMONIALS CAROUSEL
 // ==================================================
+let allTestimonials = [];
+let currentPage = 0;
+const testimonialsPerPage = 3;
+
 async function loadTestimonials() {
     try {
         console.log('Loading testimonials...');
@@ -610,50 +614,10 @@ async function loadTestimonials() {
         console.log('Testimonials response:', result);
 
         if (result.success && result.data && result.data.length > 0) {
-            const testimonialsGrid = document.querySelector('.testimonials-grid');
-
-            // Clear existing testimonials
-            testimonialsGrid.innerHTML = '';
-
-            // Display up to 6 success stories
-            result.data.slice(0, 6).forEach(story => {
-                const initials = story.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-
-                const testimonialCard = document.createElement('div');
-                testimonialCard.className = 'testimonial-card glass-effect';
-                testimonialCard.innerHTML = `
-                    <div class="testimonial-header">
-                        <div class="testimonial-avatar">
-                            <div class="avatar-gradient">${initials}</div>
-                        </div>
-                        <div class="testimonial-author">
-                            <h4>${escapeHtml(story.name)}</h4>
-                            <p>${escapeHtml(story.role)}</p>
-                        </div>
-                    </div>
-                    <div class="testimonial-rating">
-                        ${'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>'.repeat(story.rating)}
-                    </div>
-                    ${story.image ? `<div class="testimonial-image" style="margin: 10px 0;"><img src="${story.image}" alt="${escapeHtml(story.name)}" onerror="this.parentElement.style.display='none'" style="width: 100%; max-height: 180px; object-fit: cover; border-radius: 8px; border: 2px solid rgba(102, 126, 234, 0.3); display: block;"></div>` : ''}
-                    <p class="testimonial-text">
-                        "${escapeHtml(story.text)}"
-                    </p>
-                `;
-
-                testimonialsGrid.appendChild(testimonialCard);
-
-                // Add fade-in animation
-                testimonialCard.style.opacity = '0';
-                testimonialCard.style.transform = 'translateY(20px)';
-                testimonialCard.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-
-                setTimeout(() => {
-                    testimonialCard.style.opacity = '1';
-                    testimonialCard.style.transform = 'translateY(0)';
-                }, 100);
-            });
+            allTestimonials = result.data;
+            displayTestimonials();
+            setupCarouselControls();
         } else {
-            // If no testimonials, hide loading message
             const testimonialsGrid = document.querySelector('.testimonials-grid');
             if (testimonialsGrid) {
                 testimonialsGrid.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">No success stories available yet.</p>';
@@ -661,11 +625,94 @@ async function loadTestimonials() {
         }
     } catch (error) {
         console.error('Error loading testimonials:', error);
-        // Hide loading message on error
         const testimonialsGrid = document.querySelector('.testimonials-grid');
         if (testimonialsGrid) {
             testimonialsGrid.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">Unable to load success stories at the moment.</p>';
         }
+    }
+}
+
+function displayTestimonials() {
+    const testimonialsGrid = document.querySelector('.testimonials-grid');
+    testimonialsGrid.innerHTML = '';
+
+    const startIndex = currentPage * testimonialsPerPage;
+    const endIndex = Math.min(startIndex + testimonialsPerPage, allTestimonials.length);
+    const testimonialsToShow = allTestimonials.slice(startIndex, endIndex);
+
+    testimonialsToShow.forEach((story, index) => {
+        const initials = story.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+
+        const testimonialCard = document.createElement('div');
+        testimonialCard.className = 'testimonial-card glass-effect';
+        testimonialCard.innerHTML = `
+            <div class="testimonial-header">
+                <div class="testimonial-avatar">
+                    <div class="avatar-gradient">${initials}</div>
+                </div>
+                <div class="testimonial-author">
+                    <h4>${escapeHtml(story.name)}</h4>
+                    <p>${escapeHtml(story.role)}</p>
+                </div>
+            </div>
+            <div class="testimonial-rating">
+                ${'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>'.repeat(story.rating)}
+            </div>
+            ${story.image ? `<div class="testimonial-image" style="margin: 10px 0;"><img src="${story.image}" alt="${escapeHtml(story.name)}" onerror="this.parentElement.style.display='none'" style="width: 100%; max-height: 180px; object-fit: cover; border-radius: 8px; border: 2px solid rgba(102, 126, 234, 0.3); display: block;"></div>` : ''}
+            <p class="testimonial-text">
+                "${escapeHtml(story.text)}"
+            </p>
+        `;
+
+        testimonialsGrid.appendChild(testimonialCard);
+
+        // Add fade-in animation
+        testimonialCard.style.opacity = '0';
+        testimonialCard.style.transform = 'translateY(20px)';
+        testimonialCard.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+
+        setTimeout(() => {
+            testimonialCard.style.opacity = '1';
+            testimonialCard.style.transform = 'translateY(0)';
+        }, 100 * (index + 1));
+    });
+
+    updateCarouselButtons();
+}
+
+function setupCarouselControls() {
+    const prevBtn = document.getElementById('testimonialPrev');
+    const nextBtn = document.getElementById('testimonialNext');
+
+    if (prevBtn && nextBtn) {
+        prevBtn.addEventListener('click', () => {
+            if (currentPage > 0) {
+                currentPage--;
+                displayTestimonials();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            const maxPage = Math.ceil(allTestimonials.length / testimonialsPerPage) - 1;
+            if (currentPage < maxPage) {
+                currentPage++;
+                displayTestimonials();
+            }
+        });
+    }
+}
+
+function updateCarouselButtons() {
+    const prevBtn = document.getElementById('testimonialPrev');
+    const nextBtn = document.getElementById('testimonialNext');
+    const maxPage = Math.ceil(allTestimonials.length / testimonialsPerPage) - 1;
+
+    if (prevBtn) {
+        prevBtn.disabled = currentPage === 0;
+    }
+
+    if (nextBtn) {
+        nextBtn.disabled = currentPage >= maxPage;
     }
 }
 

@@ -1027,15 +1027,40 @@ section:not(.hero):not(.cta) p {
 }
 
 .testimonials-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
+    display: flex;
+    gap: 1.5rem;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding-bottom: 1rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) var(--bg-glass);
+}
+
+.testimonials-grid::-webkit-scrollbar {
+    height: 8px;
+}
+
+.testimonials-grid::-webkit-scrollbar-track {
+    background: var(--bg-glass);
+    border-radius: 10px;
+}
+
+.testimonials-grid::-webkit-scrollbar-thumb {
+    background: var(--gradient-primary);
+    border-radius: 10px;
+}
+
+.testimonials-grid::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary);
 }
 
 .testimonial-card {
-    padding: 2rem;
+    min-width: 280px;
+    max-width: 320px;
+    padding: 1.5rem;
     border-radius: var(--radius-lg);
     transition: var(--transition-base);
+    flex-shrink: 0;
 }
 
 .testimonial-card:hover {
@@ -1046,8 +1071,8 @@ section:not(.hero):not(.cta) p {
 .testimonial-header {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
 }
 
 .testimonial-avatar {
@@ -1055,15 +1080,15 @@ section:not(.hero):not(.cta) p {
 }
 
 .avatar-gradient {
-    width: 60px;
-    height: 60px;
+    width: 45px;
+    height: 45px;
     border-radius: var(--radius-full);
     background: var(--gradient-primary);
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 1.25rem;
+    font-size: 1rem;
     color: white;
 }
 

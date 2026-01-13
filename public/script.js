@@ -599,10 +599,12 @@ document.querySelectorAll('input[type="tel"]').forEach(input => {
 // ==================================================
 async function loadTestimonials() {
     try {
+        console.log('Loading testimonials...');
         const response = await fetch('https://shashank-jet.vercel.app/api/success-stories');
         const result = await response.json();
+        console.log('Testimonials response:', result);
 
-        if (result.success && result.data.length > 0) {
+        if (result.success && result.data && result.data.length > 0) {
             const testimonialsGrid = document.querySelector('.testimonials-grid');
 
             // Clear existing testimonials

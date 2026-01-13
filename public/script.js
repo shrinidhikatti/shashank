@@ -599,7 +599,7 @@ document.querySelectorAll('input[type="tel"]').forEach(input => {
 // ==================================================
 async function loadTestimonials() {
     try {
-        const response = await fetch('/api/success-stories');
+        const response = await fetch('https://shashank-jet.vercel.app/api/success-stories');
         const result = await response.json();
 
         if (result.success && result.data.length > 0) {

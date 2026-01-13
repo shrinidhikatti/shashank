@@ -375,6 +375,19 @@
                     </div>
 
                     <div class="form-section">
+                        <h3>Upload Image (Optional)</h3>
+                        <div class="form-group">
+                            <label for="feedbackImage" style="display: block; margin-bottom: 10px; color: #666;">
+                                Upload a certificate, screenshot, or photo (JPG, PNG - Max 5MB)
+                            </label>
+                            <input type="file" id="feedbackImage" name="feedbackImage" accept="image/jpeg,image/png,image/jpg" style="padding: 10px;">
+                            <div id="imagePreview" style="margin-top: 15px; display: none;">
+                                <img id="previewImg" src="" alt="Preview" style="max-width: 100%; max-height: 300px; border-radius: 10px; border: 2px solid #667eea;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
                         <div class="checkbox-group">
                             <input type="checkbox" id="displayPublicly" name="displayPublicly">
                             <label for="displayPublicly">I agree to display my feedback publicly as a testimonial on the website</label>
@@ -403,29 +416,54 @@
     </div>
 
     <script>
+        // Image preview functionality
+        document.getElementById('feedbackImage').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Check file size (5MB limit)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('File size must be less than 5MB');
+                    e.target.value = '';
+                    return;
+                }
+
+                // Show preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('previewImg').src = e.target.result;
+                    document.getElementById('imagePreview').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                document.getElementById('imagePreview').style.display = 'none';
+            }
+        });
+
         document.getElementById('feedbackForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
-            const formData = {
-                studentName: document.getElementById('studentName').value,
-                studentEmail: document.getElementById('studentEmail').value,
-                courseCompleted: document.getElementById('courseCompleted').value,
-                currentRole: document.getElementById('currentRole').value,
-                overallRating: document.querySelector('input[name="overallRating"]:checked').value,
-                instructorRating: document.querySelector('input[name="instructorRating"]:checked').value,
-                contentRating: document.querySelector('input[name="contentRating"]:checked').value,
-                feedbackText: document.getElementById('feedbackText').value,
-                improvements: document.getElementById('improvements').value,
-                displayPublicly: document.getElementById('displayPublicly').checked
-            };
+            const formData = new FormData();
+            formData.append('studentName', document.getElementById('studentName').value);
+            formData.append('studentEmail', document.getElementById('studentEmail').value);
+            formData.append('courseCompleted', document.getElementById('courseCompleted').value);
+            formData.append('currentRole', document.getElementById('currentRole').value);
+            formData.append('overallRating', document.querySelector('input[name="overallRating"]:checked').value);
+            formData.append('instructorRating', document.querySelector('input[name="instructorRating"]:checked').value);
+            formData.append('contentRating', document.querySelector('input[name="contentRating"]:checked').value);
+            formData.append('feedbackText', document.getElementById('feedbackText').value);
+            formData.append('improvements', document.getElementById('improvements').value);
+            formData.append('displayPublicly', document.getElementById('displayPublicly').checked);
+
+            // Add image if selected
+            const imageFile = document.getElementById('feedbackImage').files[0];
+            if (imageFile) {
+                formData.append('feedbackImage', imageFile);
+            }
 
             try {
-                const response = await fetch('/api/feedback', {
+                const response = await fetch('https://shashank-jet.vercel.app/api/feedback', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(formData)
+                    body: formData
                 });
 
                 const result = await response.json();

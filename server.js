@@ -294,10 +294,24 @@ app.post('/api/chat/message', async (req, res) => {
     }
 });
 
+// Configure multer for feedback image uploads
+const feedbackStorage = multer.memoryStorage(); // Store in memory for base64 conversion
+const feedbackUpload = multer({
+    storage: feedbackStorage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+    fileFilter: function (req, file, cb) {
+        if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png' || file.mimetype === 'image/jpg') {
+            cb(null, true);
+        } else {
+            cb(new Error('Only JPG, JPEG, and PNG images are allowed!'), false);
+        }
+    }
+});
+
 // ==================================================
 // STUDENT FEEDBACK SUBMISSION
 // ==================================================
-app.post('/api/feedback', async (req, res) => {
+app.post('/api/feedback', feedbackUpload.single('feedbackImage'), async (req, res) => {
     try {
         const {
             studentName,
@@ -311,6 +325,12 @@ app.post('/api/feedback', async (req, res) => {
             improvements,
             displayPublicly
         } = req.body;
+
+        // Convert image to base64 if uploaded
+        let imageBase64 = null;
+        if (req.file) {
+            imageBase64 = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+        }
 
         // Validation
         if (!studentName || !studentEmail || !courseCompleted || !feedbackText) {
@@ -332,12 +352,12 @@ app.post('/api/feedback', async (req, res) => {
             INSERT INTO feedback (
                 student_name, student_email, course_completed, student_role,
                 overall_rating, instructor_rating, content_rating,
-                feedback_text, improvements, display_publicly, status
+                feedback_text, improvements, display_publicly, status, image_data
             )
             VALUES (
                 ${studentName}, ${studentEmail}, ${courseCompleted}, ${currentRole || ''},
                 ${parseInt(overallRating)}, ${parseInt(instructorRating)}, ${parseInt(contentRating)},
-                ${feedbackText}, ${improvements || ''}, ${displayPublicly === true}, 'approved'
+                ${feedbackText}, ${improvements || ''}, ${displayPublicly === 'true' || displayPublicly === true}, 'approved', ${imageBase64}
             )
             RETURNING id
         `;
@@ -369,7 +389,7 @@ app.get('/api/testimonials', async (req, res) => {
             SELECT
                 id, student_name as name, course_completed as course,
                 student_role as role, overall_rating as rating,
-                feedback_text as text, timestamp
+                feedback_text as text, image_data as image, timestamp
             FROM feedback
             WHERE display_publicly = true AND status = 'approved'
             ORDER BY timestamp DESC

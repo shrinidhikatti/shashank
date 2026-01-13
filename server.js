@@ -19,7 +19,10 @@ const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_
 const sql = neon(DATABASE_URL);
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: ['https://www.reachupleaarningcenter.in', 'http://localhost:7177', 'http://localhost:3000'],
+    credentials: true
+}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 

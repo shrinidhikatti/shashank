@@ -198,7 +198,7 @@ contactForm.addEventListener('submit', async (e) => {
 
     try {
         // Send data to backend API
-        const response = await fetch('https://shashank-8m77ajwkm-shrinidhis-projects-07eac2e5.vercel.app/api/contact', {
+        const response = await fetch('https://shashank-jet.vercel.app/api/contact', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -265,7 +265,7 @@ chatSignupForm.addEventListener('submit', async (e) => {
 
     try {
         // Send data to backend API
-        const response = await fetch('https://shashank-8m77ajwkm-shrinidhis-projects-07eac2e5.vercel.app/api/chat/signup', {
+        const response = await fetch('https://shashank-jet.vercel.app/api/chat/signup', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -323,7 +323,7 @@ async function sendMessage() {
 
     // Save message to backend
     try {
-        await fetch('https://shashank-8m77ajwkm-shrinidhis-projects-07eac2e5.vercel.app/api/chat/message', {
+        await fetch('https://shashank-jet.vercel.app/api/chat/message', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

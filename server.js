@@ -646,15 +646,16 @@ app.post('/api/success-stories', async (req, res) => {
     }
 });
 
-// Get all success stories (Public)
+// Get all success stories (Public) - Using feedback table
 app.get('/api/success-stories', async (req, res) => {
     try {
         const stories = await sql`
             SELECT
-                id, name, role, course, rating, testimonial_text as text, created_at
-            FROM success_stories
-            WHERE status = 'approved'
-            ORDER BY created_at DESC
+                id, student_name as name, student_role as role, course_completed as course,
+                overall_rating as rating, feedback_text as text, image_data as image, timestamp as created_at
+            FROM feedback
+            WHERE status = 'approved' AND display_publicly = true
+            ORDER BY timestamp DESC
         `;
 
         res.json({

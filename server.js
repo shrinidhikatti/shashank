@@ -690,7 +690,7 @@ app.get('/api/success-stories', async (req, res) => {
 app.delete('/api/success-stories/:id', async (req, res) => {
     try {
         await sql`
-            DELETE FROM success_stories WHERE id = ${parseInt(req.params.id)}
+            DELETE FROM feedback WHERE id = ${parseInt(req.params.id)}
         `;
 
         console.log('🗑️  Success story deleted:', req.params.id);

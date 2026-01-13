@@ -383,12 +383,6 @@ function scrollToBottom() {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
 function generateBotResponse(userMessage) {
     const message = userMessage.toLowerCase();
 
@@ -450,6 +444,15 @@ function generateBotResponse(userMessage) {
     return `Thank you for your message! Our team will contact you soon at ${userInfo.email} or ${userInfo.phone}.\n\nYou can ask about:\n• Course Details\n• Training Schedules\n• Fees & Payment\n• Job Assistance\n• Demo Classes\n\nOr call us at: +91 98765 43210`;
 }
 } // End of chat functionality check
+
+// ==================================================
+// UTILITY FUNCTIONS
+// ==================================================
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
 
 // ==================================================
 // NOTIFICATION SYSTEM

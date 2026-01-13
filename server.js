@@ -10,9 +10,19 @@ const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
 const { neon } = require('@neondatabase/serverless');
+const nodemailer = require('nodemailer');
 
 const app = express();
 const PORT = process.env.PORT || 7177;
+
+// Email configuration
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER || 'shashanksaptrainer@gmail.com',
+        pass: process.env.EMAIL_PASSWORD // App password from Gmail
+    }
+});
 
 // Database connection
 const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_DQmKvBez0t4X@ep-lingering-leaf-a1m6w6ud-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require';
@@ -117,6 +127,33 @@ app.post('/api/contact', async (req, res) => {
         `;
 
         const contactId = result[0].id;
+
+        // Send email notification
+        try {
+            const mailOptions = {
+                from: process.env.EMAIL_USER || 'shashanksaptrainer@gmail.com',
+                to: 'shashanksaptrainer@gmail.com',
+                subject: `New Contact Form Submission - ${course || 'General Inquiry'}`,
+                html: `
+                    <h2>New Contact Form Submission</h2>
+                    <p><strong>Submission ID:</strong> ${contactId}</p>
+                    <p><strong>Name:</strong> ${name}</p>
+                    <p><strong>Email:</strong> ${email}</p>
+                    <p><strong>Phone:</strong> ${phone}</p>
+                    <p><strong>Course Interested:</strong> ${course || 'Not specified'}</p>
+                    <p><strong>Message:</strong></p>
+                    <p>${message || 'No message provided'}</p>
+                    <hr>
+                    <p><strong>Submitted on:</strong> ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</p>
+                `
+            };
+
+            await transporter.sendMail(mailOptions);
+            console.log('✅ Email sent successfully to shashanksaptrainer@gmail.com');
+        } catch (emailError) {
+            console.error('❌ Error sending email:', emailError);
+            // Don't fail the request if email fails
+        }
 
         console.log('✅ New contact form submission:', { id: contactId, name, email });
         res.json({

@@ -1215,6 +1215,8 @@ section:not(.hero):not(.cta) p {
 .contact-card p {
     color: var(--text-secondary);
     font-size: 1rem;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 .contact-form-wrapper {

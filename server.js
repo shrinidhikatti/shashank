@@ -608,8 +608,8 @@ app.delete('/api/materials/:id', async (req, res) => {
 // SUCCESS STORIES / TESTIMONIALS MANAGEMENT
 // ==================================================
 
-// Add success story (Admin only)
-app.post('/api/success-stories', async (req, res) => {
+// Add success story (Admin only) - Save to feedback table
+app.post('/api/success-stories', feedbackUpload.single('storyImage'), async (req, res) => {
     try {
         const { name, role, course, rating, text } = req.body;
 
@@ -621,10 +621,24 @@ app.post('/api/success-stories', async (req, res) => {
             });
         }
 
-        // Insert success story into database
+        // Convert image to base64 if uploaded
+        let imageBase64 = null;
+        if (req.file) {
+            imageBase64 = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+        }
+
+        // Insert into feedback table (used as success stories)
         const result = await sql`
-            INSERT INTO success_stories (name, role, course, rating, testimonial_text, status)
-            VALUES (${name}, ${role}, ${course}, ${parseInt(rating)}, ${text}, 'approved')
+            INSERT INTO feedback (
+                student_name, student_email, course_completed, student_role,
+                overall_rating, instructor_rating, content_rating,
+                feedback_text, improvements, display_publicly, status, image_data
+            )
+            VALUES (
+                ${name}, 'admin@example.com', ${course}, ${role},
+                ${parseInt(rating)}, ${parseInt(rating)}, ${parseInt(rating)},
+                ${text}, '', true, 'approved', ${imageBase64}
+            )
             RETURNING id
         `;
 

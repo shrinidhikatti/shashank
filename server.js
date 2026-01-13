@@ -131,20 +131,48 @@ app.post('/api/contact', async (req, res) => {
         // Send email notification
         try {
             const mailOptions = {
-                from: process.env.EMAIL_USER || 'shashanksaptrainer@gmail.com',
+                from: `"Website Contact Form" <${process.env.EMAIL_USER || 'shashanksaptrainer@gmail.com'}>`,
                 to: 'shashanksaptrainer@gmail.com',
-                subject: `New Contact Form Submission - ${course || 'General Inquiry'}`,
+                replyTo: email,
+                subject: `🔔 New Lead: ${name} - ${course || 'General Inquiry'}`,
                 html: `
-                    <h2>New Contact Form Submission</h2>
-                    <p><strong>Submission ID:</strong> ${contactId}</p>
-                    <p><strong>Name:</strong> ${name}</p>
-                    <p><strong>Email:</strong> ${email}</p>
-                    <p><strong>Phone:</strong> ${phone}</p>
-                    <p><strong>Course Interested:</strong> ${course || 'Not specified'}</p>
-                    <p><strong>Message:</strong></p>
-                    <p>${message || 'No message provided'}</p>
-                    <hr>
-                    <p><strong>Submitted on:</strong> ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</p>
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
+                        <h2 style="color: #667eea; margin-top: 0;">📩 New Contact Form Submission</h2>
+
+                        <div style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                            <p style="margin: 5px 0;"><strong>Submission ID:</strong> #${contactId}</p>
+                            <p style="margin: 5px 0;"><strong>Time:</strong> ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</p>
+                        </div>
+
+                        <h3 style="color: #333;">Customer Details:</h3>
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <tr style="background: #f9f9f9;">
+                                <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold;">Name</td>
+                                <td style="padding: 10px; border: 1px solid #ddd;">${name}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold;">Email</td>
+                                <td style="padding: 10px; border: 1px solid #ddd;"><a href="mailto:${email}">${email}</a></td>
+                            </tr>
+                            <tr style="background: #f9f9f9;">
+                                <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold;">Phone</td>
+                                <td style="padding: 10px; border: 1px solid #ddd;"><a href="tel:${phone}">${phone}</a></td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold;">Course Interested</td>
+                                <td style="padding: 10px; border: 1px solid #ddd;"><strong style="color: #667eea;">${course || 'Not specified'}</strong></td>
+                            </tr>
+                        </table>
+
+                        <h3 style="color: #333; margin-top: 20px;">Message:</h3>
+                        <div style="background: #f9f9f9; padding: 15px; border-radius: 5px; border-left: 4px solid #667eea;">
+                            <p style="margin: 0;">${message || 'No message provided'}</p>
+                        </div>
+
+                        <div style="margin-top: 20px; padding: 10px; background: #e8f5e9; border-radius: 5px;">
+                            <p style="margin: 0; color: #2e7d32;">✅ Click "Reply" to respond directly to ${email}</p>
+                        </div>
+                    </div>
                 `
             };
 

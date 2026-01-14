@@ -699,12 +699,8 @@ function setupCarouselControls() {
         });
 
         nextBtn.addEventListener('click', () => {
-            // Calculate how many slides we can show
-            const maxIndex = allTestimonials.length - 3;
-            if (currentIndex < maxIndex) {
-                currentIndex++;
-                updateCarouselPosition();
-            }
+            currentIndex++;
+            updateCarouselPosition();
         });
     }
 
@@ -717,7 +713,19 @@ function setupCarouselControls() {
 function updateCarouselButtons() {
     const prevBtn = document.getElementById('testimonialPrev');
     const nextBtn = document.getElementById('testimonialNext');
-    const maxIndex = Math.max(0, allTestimonials.length - 3);
+
+    // Calculate how many testimonials are visible at once based on screen size
+    const windowWidth = window.innerWidth;
+    let visibleCount;
+    if (windowWidth <= 768) {
+        visibleCount = 1; // Mobile: 1 testimonial
+    } else if (windowWidth <= 1024) {
+        visibleCount = 2; // Tablet: 2 testimonials
+    } else {
+        visibleCount = 3; // Desktop: 3 testimonials
+    }
+
+    const maxIndex = Math.max(0, allTestimonials.length - visibleCount);
 
     if (prevBtn) {
         prevBtn.disabled = currentIndex === 0;

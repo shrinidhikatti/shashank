@@ -600,11 +600,10 @@ document.querySelectorAll('input[type="tel"]').forEach(input => {
 });
 
 // ==================================================
-// TESTIMONIALS CAROUSEL
+// TESTIMONIALS CAROUSEL - SMOOTH SCROLLING
 // ==================================================
 let allTestimonials = [];
-let currentPage = 0;
-const testimonialsPerPage = 3;
+let currentIndex = 0;
 
 async function loadTestimonials() {
     try {
@@ -615,32 +614,30 @@ async function loadTestimonials() {
 
         if (result.success && result.data && result.data.length > 0) {
             allTestimonials = result.data;
-            displayTestimonials();
+            renderAllTestimonials();
+            updateCarouselPosition();
             setupCarouselControls();
         } else {
             const testimonialsGrid = document.querySelector('.testimonials-grid');
             if (testimonialsGrid) {
-                testimonialsGrid.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">No success stories available yet.</p>';
+                testimonialsGrid.innerHTML = '<p style="text-align: center;">No success stories available yet.</p>';
             }
         }
     } catch (error) {
         console.error('Error loading testimonials:', error);
         const testimonialsGrid = document.querySelector('.testimonials-grid');
         if (testimonialsGrid) {
-            testimonialsGrid.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">Unable to load success stories at the moment.</p>';
+            testimonialsGrid.innerHTML = '<p style="text-align: center;">Unable to load success stories at the moment.</p>';
         }
     }
 }
 
-function displayTestimonials() {
+function renderAllTestimonials() {
     const testimonialsGrid = document.querySelector('.testimonials-grid');
     testimonialsGrid.innerHTML = '';
 
-    const startIndex = currentPage * testimonialsPerPage;
-    const endIndex = Math.min(startIndex + testimonialsPerPage, allTestimonials.length);
-    const testimonialsToShow = allTestimonials.slice(startIndex, endIndex);
-
-    testimonialsToShow.forEach((story, index) => {
+    // Render all testimonials
+    allTestimonials.forEach((story, index) => {
         const initials = story.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
         const testimonialCard = document.createElement('div');
@@ -665,17 +662,24 @@ function displayTestimonials() {
         `;
 
         testimonialsGrid.appendChild(testimonialCard);
-
-        // Add fade-in animation
-        testimonialCard.style.opacity = '0';
-        testimonialCard.style.transform = 'translateY(20px)';
-        testimonialCard.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-
-        setTimeout(() => {
-            testimonialCard.style.opacity = '1';
-            testimonialCard.style.transform = 'translateY(0)';
-        }, 100 * (index + 1));
     });
+}
+
+function updateCarouselPosition() {
+    const testimonialsGrid = document.querySelector('.testimonials-grid');
+    const container = document.querySelector('.testimonials-grid-container');
+
+    if (!testimonialsGrid || !container) return;
+
+    // Get the width of one card plus gap
+    const containerWidth = container.offsetWidth;
+    const gap = 24; // 1.5rem = 24px
+    const cardWidth = (containerWidth - (gap * 2)) / 3; // Width for 3 cards
+    const scrollDistance = cardWidth + gap;
+
+    // Calculate transform
+    const translateX = -(currentIndex * scrollDistance);
+    testimonialsGrid.style.transform = `translateX(${translateX}px)`;
 
     updateCarouselButtons();
 }
@@ -686,33 +690,39 @@ function setupCarouselControls() {
 
     if (prevBtn && nextBtn) {
         prevBtn.addEventListener('click', () => {
-            if (currentPage > 0) {
-                currentPage--;
-                displayTestimonials();
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateCarouselPosition();
             }
         });
 
         nextBtn.addEventListener('click', () => {
-            const maxPage = Math.ceil(allTestimonials.length / testimonialsPerPage) - 1;
-            if (currentPage < maxPage) {
-                currentPage++;
-                displayTestimonials();
+            // Calculate how many slides we can show
+            const maxIndex = allTestimonials.length - 3;
+            if (currentIndex < maxIndex) {
+                currentIndex++;
+                updateCarouselPosition();
             }
         });
     }
+
+    // Update position on window resize
+    window.addEventListener('resize', () => {
+        updateCarouselPosition();
+    });
 }
 
 function updateCarouselButtons() {
     const prevBtn = document.getElementById('testimonialPrev');
     const nextBtn = document.getElementById('testimonialNext');
-    const maxPage = Math.ceil(allTestimonials.length / testimonialsPerPage) - 1;
+    const maxIndex = Math.max(0, allTestimonials.length - 3);
 
     if (prevBtn) {
-        prevBtn.disabled = currentPage === 0;
+        prevBtn.disabled = currentIndex === 0;
     }
 
     if (nextBtn) {
-        nextBtn.disabled = currentPage >= maxPage;
+        nextBtn.disabled = currentIndex >= maxIndex;
     }
 }
 

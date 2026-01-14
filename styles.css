@@ -1070,23 +1070,33 @@ section:not(.hero):not(.cta) p {
     height: 24px;
 }
 
-.testimonials-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
-    overflow: hidden;
+.testimonials-grid-container {
     flex: 1;
+    overflow: hidden;
+    position: relative;
+}
+
+.testimonials-grid {
+    display: flex;
+    gap: 1.5rem;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+}
+
+.testimonial-card {
+    min-width: calc((100% - 3rem) / 3);
+    flex-shrink: 0;
 }
 
 @media (max-width: 1024px) {
-    .testimonials-grid {
-        grid-template-columns: repeat(2, 1fr);
+    .testimonial-card {
+        min-width: calc((100% - 1.5rem) / 2);
     }
 }
 
 @media (max-width: 768px) {
-    .testimonials-grid {
-        grid-template-columns: 1fr;
+    .testimonial-card {
+        min-width: 100%;
     }
 
     .carousel-btn {

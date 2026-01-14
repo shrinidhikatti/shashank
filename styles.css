@@ -1084,31 +1084,31 @@ section:not(.hero):not(.cta) p {
 }
 
 .testimonial-card {
-    min-width: calc((100% - 3rem) / 3);
+    min-width: calc(33.333% - 1rem);
+    max-width: calc(33.333% - 1rem);
     flex-shrink: 0;
+    padding: 1.5rem;
+    border-radius: var(--radius-lg);
+    transition: var(--transition-base);
 }
 
 @media (max-width: 1024px) {
     .testimonial-card {
-        min-width: calc((100% - 1.5rem) / 2);
+        min-width: calc(50% - 0.75rem);
+        max-width: calc(50% - 0.75rem);
     }
 }
 
 @media (max-width: 768px) {
     .testimonial-card {
         min-width: 100%;
+        max-width: 100%;
     }
 
     .carousel-btn {
         width: 40px;
         height: 40px;
     }
-}
-
-.testimonial-card {
-    padding: 1.5rem;
-    border-radius: var(--radius-lg);
-    transition: var(--transition-base);
 }
 
 .testimonial-card:hover {

@@ -671,10 +671,12 @@ function updateCarouselPosition() {
 
     if (!testimonialsGrid || !container) return;
 
-    // Get the width of one card plus gap
-    const containerWidth = container.offsetWidth;
+    // Get the actual width of the first card if it exists
+    const firstCard = testimonialsGrid.querySelector('.testimonial-card');
+    if (!firstCard) return;
+
+    const cardWidth = firstCard.offsetWidth;
     const gap = 24; // 1.5rem = 24px
-    const cardWidth = (containerWidth - (gap * 2)) / 3; // Width for 3 cards
     const scrollDistance = cardWidth + gap;
 
     // Calculate transform

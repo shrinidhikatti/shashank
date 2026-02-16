@@ -198,7 +198,7 @@ contactForm.addEventListener('submit', async (e) => {
 
     try {
         // Send data to backend API
-        const response = await fetch('https://shashank-jet.vercel.app/api/contact', {
+        const response = await fetch('https://www.reachupleaarningcenter.in/api/contact', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -266,7 +266,7 @@ chatSignupForm.addEventListener('submit', async (e) => {
 
     try {
         // Send data to backend API
-        const response = await fetch('https://shashank-jet.vercel.app/api/chat/signup', {
+        const response = await fetch('https://www.reachupleaarningcenter.in/api/chat/signup', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -324,7 +324,7 @@ async function sendMessage() {
 
     // Save message to backend
     try {
-        await fetch('https://shashank-jet.vercel.app/api/chat/message', {
+        await fetch('https://www.reachupleaarningcenter.in/api/chat/message', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -608,7 +608,7 @@ let currentIndex = 0;
 async function loadTestimonials() {
     try {
         console.log('Loading testimonials...');
-        const response = await fetch('https://shashank-jet.vercel.app/api/success-stories');
+        const response = await fetch('https://www.reachupleaarningcenter.in/api/success-stories');
         const result = await response.json();
         console.log('Testimonials response:', result);
 

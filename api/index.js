@@ -1,6 +1,7 @@
-// Vercel serverless function entry point
+// Vercel serverless function handler
 const app = require('../server.js');
 
-// Export as default for Vercel
-module.exports = app;
-module.exports.default = app;
+// Export handler for Vercel serverless
+module.exports = async (req, res) => {
+    return app(req, res);
+};

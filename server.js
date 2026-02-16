@@ -30,7 +30,18 @@ const sql = neon(DATABASE_URL);
 
 // Middleware
 app.use(cors({
-    origin: ['https://www.reachuplearningcenter.in', 'http://www.reachuplearningcenter.in', 'https://www.reachupleaarningcenter.in', 'http://localhost:7177', 'http://localhost:3000'],
+    origin: [
+        'https://www.reachuplearningcenter.in',
+        'http://www.reachuplearningcenter.in',
+        'https://reachuplearningcenter.in',
+        'http://reachuplearningcenter.in',
+        'https://www.reachupleaarningcenter.in',
+        'http://www.reachupleaarningcenter.in',
+        'https://reachupleaarningcenter.in',
+        'http://reachupleaarningcenter.in',
+        'http://localhost:7177',
+        'http://localhost:3000'
+    ],
     credentials: true
 }));
 app.use(bodyParser.json());
